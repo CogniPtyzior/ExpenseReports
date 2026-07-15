@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using WebApi.Domain.Entities;
+using WebApi.Domain.Users;
 
 namespace WebApi.Infrastructure.Persistence;
 

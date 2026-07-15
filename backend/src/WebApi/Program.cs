@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
-using WebApi.Infrastructure.Api;
+using WebApi.Application;
+using WebApi.Infrastructure;
 using WebApi.Infrastructure.Persistence;
+using WebApi.Presentation;
+using WebApi.Presentation.Users;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +15,9 @@ builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "database",
             await AppDbContext.SeedAsync(context, cancellationToken)));
 builder.Services
     .AddOpenApi()
-    .AddPersistence();
+    .AddApplication()
+    .AddInfrastructure()
+    .AddPresentation();
 builder.Services.AddHealthChecks();
 
 var app = builder.Build();
@@ -31,7 +36,10 @@ if (app.Environment.IsDevelopment())
             .LogError(e, "An error occurred while migrating the database.");
         return;
     }
+
     app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

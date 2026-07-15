@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using WebApi.Domain.Entities;
+using WebApi.Domain.Users;
 
 namespace WebApi.Infrastructure.Persistence;
 
