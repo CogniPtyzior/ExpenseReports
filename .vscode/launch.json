@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Aspire AppHost",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "backend: build apphost",
+      "program": "${workspaceFolder}/backend/src/AppHost/bin/Debug/net9.0/AppHost.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/backend/src/AppHost",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}

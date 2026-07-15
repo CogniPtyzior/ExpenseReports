@@ -1,0 +1,70 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "backend: build",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "backend/ExpenseManagement.slnx"],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "backend: build apphost",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "backend/src/AppHost/AppHost.csproj"],
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "backend: run aspire",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["run", "--project", "backend/src/AppHost/AppHost.csproj"],
+      "problemMatcher": "$msCompile",
+      "isBackground": true
+    },
+    {
+      "label": "frontend: install",
+      "type": "process",
+      "command": "npm",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "frontend: build",
+      "type": "process",
+      "command": "npm",
+      "args": ["run", "build"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": "$tsc",
+      "group": "build"
+    },
+    {
+      "label": "frontend: test",
+      "type": "process",
+      "command": "npm",
+      "args": ["test", "--", "--run"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "frontend: nx graph",
+      "type": "process",
+      "command": "npx",
+      "args": ["nx", "graph"],
+      "options": {
+        "cwd": "${workspaceFolder}/frontend"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
