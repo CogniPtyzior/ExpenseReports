@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics.CodeAnalysis;
 using WebApi.Application;
+using WebApi.Application.Core.Configuration;
 using WebApi.Infrastructure;
 using WebApi.Infrastructure.Persistence;
 using WebApi.Presentation;
@@ -15,6 +16,8 @@ builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "database",
     configureDbContextOptions: options =>
         options.UseAsyncSeeding(async (context, _, cancellationToken) =>
             await AppDbContext.SeedAsync(context, cancellationToken)));
+builder.Services.AddExpenseRulesOptions(builder.Configuration);
+
 builder.Services
     .AddOpenApi()
     .AddApplication()
