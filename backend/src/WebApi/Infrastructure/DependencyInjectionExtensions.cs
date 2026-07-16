@@ -2,6 +2,7 @@
 using WebApi.Application.Core.Clock;
 using WebApi.Application.Core.Observability;
 using WebApi.Application.Core.Persistence;
+using WebApi.Application.ExpenseEntries;
 using WebApi.Application.ExpenseReports;
 using WebApi.Application.Users;
 using WebApi.Infrastructure.Clock;
@@ -21,6 +22,7 @@ internal static class DependencyInjectionExtensions
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IExpenseReportRepository, ExpenseReportRepository>();
+        services.AddScoped<IExpenseEntryRepository, ExpenseEntryRepository>();
         services.AddScoped<IApplicationLogger, MicrosoftApplicationLogger<UserCommandService>>();
 
         return services;

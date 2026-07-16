@@ -31,5 +31,6 @@ internal sealed class ExpenseReportEntityTypeConfiguration : IEntityTypeConfigur
         builder.HasIndex(report => report.UserId);
         builder.HasIndex(report => new { report.Year, report.Month });
         builder.HasIndex(report => new { report.UserId, report.Year, report.Month }).IsUnique();
+        builder.HasAlternateKey(report => new { report.Id, report.Year, report.Month });
     }
 }
