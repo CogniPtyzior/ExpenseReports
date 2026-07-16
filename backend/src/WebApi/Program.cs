@@ -5,6 +5,7 @@ using WebApi.Infrastructure;
 using WebApi.Infrastructure.Persistence;
 using WebApi.Presentation;
 using WebApi.Presentation.Errors;
+using WebApi.Presentation.ExpenseReports;
 using WebApi.Presentation.Users;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,10 +44,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapUserEndpoints();
+app.MapExpenseReportEndpoints();
 app.MapHealthChecks("/health");
 
 app.Run();

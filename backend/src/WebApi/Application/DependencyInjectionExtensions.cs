@@ -1,5 +1,6 @@
 // Centralizes application-layer service registrations.
 using FluentValidation;
+using WebApi.Application.ExpenseReports;
 using WebApi.Application.Users;
 
 namespace WebApi.Application;
@@ -14,6 +15,8 @@ internal static class DependencyInjectionExtensions
         services.AddValidatorsFromAssemblyContaining<CreateUserCommandValidator>(includeInternalTypes: true);
         services.AddScoped<IUserCommandService, UserCommandService>();
         services.AddScoped<IUserQueryService, UserQueryService>();
+        services.AddScoped<IExpenseReportCommandService, ExpenseReportCommandService>();
+        services.AddScoped<IExpenseReportQueryService, ExpenseReportQueryService>();
 
         return services;
     }
