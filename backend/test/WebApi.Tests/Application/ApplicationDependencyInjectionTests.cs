@@ -1,11 +1,14 @@
 // Covers application-layer dependency injection registration.
 using Microsoft.Extensions.DependencyInjection;
+using WebApi.Application.Core.Configuration;
 using WebApi.Application;
 using WebApi.Application.Core.Clock;
 using WebApi.Application.Core.Observability;
 using WebApi.Application.Core.Persistence;
+using WebApi.Application.ExpenseEntries;
 using WebApi.Application.ExpenseReports;
 using WebApi.Application.Users;
+using WebApi.Domain.ExpenseEntries;
 using WebApi.Domain.ExpenseReports;
 using WebApi.Domain.Users;
 
@@ -17,11 +20,13 @@ public sealed class ApplicationDependencyInjectionTests
     public void Application_services_can_be_registered_and_resolved()
     {
         var services = new ServiceCollection();
+        services.Configure<ExpenseRulesOptions>(_ => { });
         services.AddApplication();
         services.AddSingleton<IClock, FixedClock>();
         services.AddSingleton<IApplicationLogger, NullApplicationLogger>();
         services.AddScoped<IUnitOfWork, NoopUnitOfWork>();
         services.AddScoped<IUserRepository, EmptyUserRepository>();
+        services.AddScoped<IExpenseEntryRepository, EmptyExpenseEntryRepository>();
         services.AddScoped<IExpenseReportRepository, EmptyExpenseReportRepository>();
 
         using var provider = services.BuildServiceProvider(new ServiceProviderOptions
@@ -34,6 +39,7 @@ public sealed class ApplicationDependencyInjectionTests
 
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IUserCommandService>());
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IUserQueryService>());
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<IExpenseEntryCommandService>());
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IExpenseReportCommandService>());
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IExpenseReportQueryService>());
     }
@@ -58,6 +64,26 @@ public sealed class ApplicationDependencyInjectionTests
         }
     }
 
+
+    private sealed class EmptyExpenseEntryRepository : IExpenseEntryRepository
+    {
+        public Task<IReadOnlyCollection<ExpenseEntry>> ListActiveByReportAsync(
+            Guid expenseReportId,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyCollection<ExpenseEntry>>([]);
+        }
+
+        public Task<ExpenseEntry?> FindActiveByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<ExpenseEntry?>(null);
+        }
+
+        public Task AddAsync(ExpenseEntry entry, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class EmptyExpenseReportRepository : IExpenseReportRepository
     {

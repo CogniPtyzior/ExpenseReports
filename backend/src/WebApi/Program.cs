@@ -6,6 +6,7 @@ using WebApi.Infrastructure;
 using WebApi.Infrastructure.Persistence;
 using WebApi.Presentation;
 using WebApi.Presentation.Errors;
+using WebApi.Presentation.ExpenseEntries;
 using WebApi.Presentation.ExpenseReports;
 using WebApi.Presentation.Users;
 
@@ -55,6 +56,7 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapUserEndpoints();
 app.MapExpenseReportEndpoints();
+app.MapExpenseEntryEndpoints();
 app.MapHealthChecks("/health");
 
 app.Run();

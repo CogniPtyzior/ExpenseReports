@@ -35,6 +35,6 @@ internal sealed class Money
             throw new DomainException("expense_entry.amount_invalid", "Amount must be strictly positive.");
         }
 
-        return new Money(amount, currency);
+        return new Money(amount, Currency.Create(currency.Code));
     }
 }

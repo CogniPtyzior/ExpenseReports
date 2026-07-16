@@ -23,7 +23,7 @@ internal static class DependencyInjectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IExpenseReportRepository, ExpenseReportRepository>();
         services.AddScoped<IExpenseEntryRepository, ExpenseEntryRepository>();
-        services.AddScoped<IApplicationLogger, MicrosoftApplicationLogger<UserCommandService>>();
+        services.AddScoped<IApplicationLogger, MicrosoftApplicationLogger<IApplicationLogger>>();
 
         return services;
     }
