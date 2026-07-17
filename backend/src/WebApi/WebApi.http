@@ -1,8 +1,22 @@
-@WebApi_HostAddress = http://localhost:5195
-@CompanyId = ""
-@EmployeeId = ""
+@WebApi_HostAddress = https://localhost:7058
+@ExpenseReportId = 77777777-7777-7777-7777-777777777777
 
-### Get users
+### List users
 GET {{WebApi_HostAddress}}/users
 Accept: application/json
 
+### List assignable users
+GET {{WebApi_HostAddress}}/users/assignable
+Accept: application/json
+
+### List expense reports
+GET {{WebApi_HostAddress}}/expense-reports
+Accept: application/json
+
+### List expense entries page 1
+GET {{WebApi_HostAddress}}/expense-reports/{{ExpenseReportId}}/entries?pageNumber=1
+Accept: application/json
+
+### List expense entries page 2
+GET {{WebApi_HostAddress}}/expense-reports/{{ExpenseReportId}}/entries?pageNumber=2
+Accept: application/json

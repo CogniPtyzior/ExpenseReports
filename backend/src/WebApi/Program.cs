@@ -4,6 +4,7 @@ using WebApi.Application;
 using WebApi.Application.Core.Configuration;
 using WebApi.Infrastructure;
 using WebApi.Infrastructure.Persistence;
+using WebApi.Infrastructure.Persistence.Seeding;
 using WebApi.Presentation;
 using WebApi.Presentation.Errors;
 using WebApi.Presentation.ExpenseEntries;
@@ -15,8 +16,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddRedisClient(connectionName: "cache");
 builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "database",
     configureDbContextOptions: options =>
-        options.UseAsyncSeeding(async (context, _, cancellationToken) =>
-            await AppDbContext.SeedAsync(context, cancellationToken)));
+    {
+        // EF seeding runs during MigrateAsync, which is already limited to Development below.
+        // The explicit guard keeps demo data out of non-development configurations without ambiguity.
+        if (builder.Environment.IsDevelopment())
+        {
+            options.UseAsyncSeeding(async (context, _, cancellationToken) =>
+                await DevelopmentDataSeeder.SeedAsync(context, cancellationToken));
+        }
+    });
 builder.Services.AddExpenseRulesOptions(builder.Configuration);
 
 builder.Services
