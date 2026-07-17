@@ -7,4 +7,6 @@ namespace WebApi.Application.ExpenseReports;
 internal interface IExpenseReportCommandService
 {
     Task<ExpenseReportResult> CreateAsync(CreateExpenseReportCommand command, CancellationToken cancellationToken);
+
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken);
 }

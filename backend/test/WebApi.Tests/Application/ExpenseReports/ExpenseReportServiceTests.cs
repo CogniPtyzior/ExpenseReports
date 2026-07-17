@@ -63,6 +63,31 @@ public sealed class ExpenseReportServiceTests
     }
 
     [Fact]
+    public async Task Delete_report_removes_it_and_commits()
+    {
+        var fixture = new Fixture();
+        var user = fixture.AddUser();
+        var report = ExpenseReport.Create(Guid.NewGuid(), user.Id, user.Name.FullName, CalendarMonth.Create(2025, 10), Now);
+        fixture.ReportRepository.Reports.Add(report);
+        var service = fixture.CreateCommandService();
+
+        await service.DeleteAsync(report.Id, CancellationToken.None);
+
+        Assert.Empty(fixture.ReportRepository.Reports);
+        Assert.Equal(1, fixture.UnitOfWork.SaveCount);
+    }
+
+    [Fact]
+    public async Task Delete_missing_report_throws_not_found()
+    {
+        var service = new Fixture().CreateCommandService();
+
+        var exception = await Assert.ThrowsAsync<NotFoundException>(() =>
+            service.DeleteAsync(Guid.NewGuid(), CancellationToken.None));
+
+        Assert.Equal("expense_report.not_found", exception.Code);
+    }
+    [Fact]
     public async Task Query_missing_report_throws_not_found()
     {
         var service = new ExpenseReportQueryService(new FakeExpenseReportRepository());
@@ -158,6 +183,11 @@ public sealed class ExpenseReportServiceTests
         {
             Reports.Add(report);
             return Task.CompletedTask;
+        }
+
+        public void Remove(ExpenseReport report)
+        {
+            Reports.Remove(report);
         }
     }
 

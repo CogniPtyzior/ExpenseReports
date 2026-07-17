@@ -17,4 +17,6 @@ internal interface IExpenseReportRepository
     Task<bool> ExistsForUserAndMonthAsync(Guid userId, CalendarMonth period, CancellationToken cancellationToken);
 
     Task AddAsync(ExpenseReport report, CancellationToken cancellationToken);
+
+    void Remove(ExpenseReport report);
 }

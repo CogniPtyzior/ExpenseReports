@@ -52,4 +52,9 @@ internal sealed class ExpenseReportRepository(AppDbContext dbContext) : IExpense
     {
         await dbContext.Set<ExpenseReport>().AddAsync(report, cancellationToken);
     }
+
+    public void Remove(ExpenseReport report)
+    {
+        dbContext.Set<ExpenseReport>().Remove(report);
+    }
 }

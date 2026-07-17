@@ -40,6 +40,19 @@ internal static class ExpenseReportEndpoints
             .Produces(StatusCodes.Status404NotFound)
             .Produces(StatusCodes.Status409Conflict);
 
+        group.MapDelete("/{id:guid}", async (
+                Guid id,
+                IExpenseReportCommandService commands,
+                CancellationToken cancellationToken) =>
+            {
+                await commands.DeleteAsync(id, cancellationToken);
+                return Results.NoContent();
+            })
+            .WithName("DeleteExpenseReport")
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound);
+
         return endpoints;
     }
 

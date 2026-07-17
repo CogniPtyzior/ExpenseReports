@@ -173,5 +173,10 @@ public sealed class ExpenseEntryQueryServiceTests
             Reports.Add(report);
             return Task.CompletedTask;
         }
+
+        public void Remove(ExpenseReport report)
+        {
+            Reports.Remove(report);
+        }
     }
 }

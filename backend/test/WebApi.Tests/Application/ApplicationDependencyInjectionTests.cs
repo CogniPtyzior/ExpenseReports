@@ -132,6 +132,10 @@ public sealed class ApplicationDependencyInjectionTests
         {
             return Task.CompletedTask;
         }
+
+        public void Remove(ExpenseReport report)
+        {
+        }
     }
     private sealed class EmptyUserRepository : IUserRepository
     {

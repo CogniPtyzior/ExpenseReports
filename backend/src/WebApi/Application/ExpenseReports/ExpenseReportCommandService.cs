@@ -45,4 +45,20 @@ internal sealed class ExpenseReportCommandService(
 
         return ExpenseReportMapper.ToResult(report);
     }
+
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+    {
+        if (id == Guid.Empty)
+        {
+            throw new ValidationException("Expense report id is required.");
+        }
+
+        var report = await reports.FindByIdAsync(id, cancellationToken)
+            ?? throw new NotFoundException("expense_report.not_found", "Expense report was not found.");
+
+        // README ambiguity: deleting a report is implemented as physical removal of its attached entries.
+        reports.Remove(report);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
+        logger.Information("Expense report {ExpenseReportId} was physically deleted with its entries.", report.Id);
+    }
 }

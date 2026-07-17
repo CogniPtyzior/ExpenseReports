@@ -45,6 +45,30 @@ public sealed class ExpenseReportEndpointTests
     }
 
     [Fact]
+    public async Task Delete_report_returns_no_content()
+    {
+        await using var app = await CreateAppAsync(new FakeExpenseReportQueryService(), new FakeExpenseReportCommandService());
+        var client = app.GetTestClient();
+
+        var response = await client.DeleteAsync($"/expense-reports/{ReportId}");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Delete_missing_report_is_mapped_to_not_found()
+    {
+        await using var app = await CreateAppAsync(new FakeExpenseReportQueryService(), new MissingDeleteExpenseReportCommandService());
+        var client = app.GetTestClient();
+
+        var response = await client.DeleteAsync($"/expense-reports/{ReportId}");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("expense_report.not_found", json.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
     public async Task Missing_report_is_mapped_to_not_found()
     {
         await using var app = await CreateAppAsync(new MissingExpenseReportQueryService(), new FakeExpenseReportCommandService());
@@ -136,6 +160,19 @@ public sealed class ExpenseReportEndpointTests
         public virtual Task<ExpenseReportResult> CreateAsync(CreateExpenseReportCommand command, CancellationToken cancellationToken)
         {
             return Task.FromResult(Result());
+        }
+
+        public virtual Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class MissingDeleteExpenseReportCommandService : FakeExpenseReportCommandService
+    {
+        public override Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+        {
+            throw new NotFoundException("expense_report.not_found", "Expense report was not found.");
         }
     }
 
