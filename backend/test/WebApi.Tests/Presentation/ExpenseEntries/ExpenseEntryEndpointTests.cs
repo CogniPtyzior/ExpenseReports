@@ -84,6 +84,19 @@ public sealed class ExpenseEntryEndpointTests
     }
 
     [Fact]
+    public async Task Quota_conflict_is_mapped_to_conflict()
+    {
+        await using var app = await CreateAppAsync(new QuotaReachedExpenseEntryCommandService());
+        var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync($"/expense-reports/{ReportId}/entries", Request());
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal("expense_entry.monthly_quota_reached", json.RootElement.GetProperty("code").GetString());
+    }
+
+    [Fact]
     public async Task Missing_billing_address_is_mapped_to_bad_request()
     {
         await using var app = await CreateAppAsync(new FakeExpenseEntryCommandService());
@@ -179,6 +192,16 @@ public sealed class ExpenseEntryEndpointTests
             CancellationToken cancellationToken)
         {
             throw new NotFoundException("expense_entry.not_found", "Expense entry was not found.");
+        }
+    }
+
+    private sealed class QuotaReachedExpenseEntryCommandService : FakeExpenseEntryCommandService
+    {
+        public override Task<ExpenseEntryResult> CreateAsync(
+            CreateExpenseEntryCommand command,
+            CancellationToken cancellationToken)
+        {
+            throw new ConflictException("expense_entry.monthly_quota_reached", "Monthly expense quota has been reached.");
         }
     }
 

@@ -58,6 +58,13 @@ public sealed class ApplicationDependencyInjectionTests
 
     private sealed class NoopUnitOfWork : IUnitOfWork
     {
+        public async Task<TResult> ExecuteInTransactionAsync<TResult>(
+            Func<CancellationToken, Task<TResult>> operation,
+            CancellationToken cancellationToken)
+        {
+            return await operation(cancellationToken);
+        }
+
         public Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
@@ -74,6 +81,10 @@ public sealed class ApplicationDependencyInjectionTests
             return Task.FromResult<IReadOnlyCollection<ExpenseEntry>>([]);
         }
 
+        public Task<int> CountActiveByReportAsync(Guid expenseReportId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(0);
+        }
         public Task<ExpenseEntry?> FindActiveByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return Task.FromResult<ExpenseEntry?>(null);
@@ -93,6 +104,11 @@ public sealed class ApplicationDependencyInjectionTests
         }
 
         public Task<ExpenseReport?> FindByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<ExpenseReport?>(null);
+        }
+
+        public Task<ExpenseReport?> FindByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
         {
             return Task.FromResult<ExpenseReport?>(null);
         }

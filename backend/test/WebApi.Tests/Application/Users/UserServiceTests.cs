@@ -151,6 +151,13 @@ public sealed class UserServiceTests
     {
         public int SaveCount { get; private set; }
 
+        public async Task<TResult> ExecuteInTransactionAsync<TResult>(
+            Func<CancellationToken, Task<TResult>> operation,
+            CancellationToken cancellationToken)
+        {
+            return await operation(cancellationToken);
+        }
+
         public Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             SaveCount++;

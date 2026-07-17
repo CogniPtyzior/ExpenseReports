@@ -22,6 +22,12 @@ internal sealed class ExpenseEntryRepository(AppDbContext dbContext) : IExpenseE
             .ToArrayAsync(cancellationToken);
     }
 
+    public Task<int> CountActiveByReportAsync(Guid expenseReportId, CancellationToken cancellationToken)
+    {
+        return dbContext.Set<ExpenseEntry>()
+            .CountAsync(entry => entry.ExpenseReportId == expenseReportId && !entry.IsDeleted, cancellationToken);
+    }
+
     public Task<ExpenseEntry?> FindActiveByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return dbContext.Set<ExpenseEntry>()

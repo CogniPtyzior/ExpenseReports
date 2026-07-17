@@ -7,9 +7,11 @@ using WebApi.Application.Core.Observability;
 using WebApi.Application.Core.Persistence;
 using WebApi.Application.ExpenseEntries;
 using WebApi.Application.ExpenseReports;
+using WebApi.Application.Users;
 using WebApi.Core.Exceptions;
 using WebApi.Domain.ExpenseEntries;
 using WebApi.Domain.ExpenseReports;
+using WebApi.Domain.Users;
 
 namespace WebApi.Tests.Application.ExpenseEntries;
 
@@ -31,6 +33,7 @@ public sealed class ExpenseEntryServiceTests
         Assert.Equal(new DateOnly(2025, 10, 15), result.ExpenseDate);
         Assert.Equal("EUR", result.Currency);
         Assert.Equal(1, fixture.UnitOfWork.SaveCount);
+        Assert.Equal(1, fixture.ReportRepository.LockCount);
     }
 
     [Fact]
@@ -59,6 +62,40 @@ public sealed class ExpenseEntryServiceTests
             }, CancellationToken.None));
 
         Assert.Equal("expense_entry.date_outside_report_month", exception.Code);
+    }
+
+    [Fact]
+    public async Task Create_entry_rejects_when_monthly_quota_is_reached()
+    {
+        var fixture = new Fixture();
+        var user = fixture.AddUser(monthlyQuota: 1);
+        var report = fixture.AddReport(user);
+        fixture.AddEntry(report);
+        var service = fixture.CreateCommandService();
+
+        var exception = await Assert.ThrowsAsync<ConflictException>(() =>
+            service.CreateAsync(CreateCommand(report.Id), CancellationToken.None));
+
+        Assert.Equal("expense_entry.monthly_quota_reached", exception.Code);
+        Assert.Equal(0, fixture.UnitOfWork.SaveCount);
+        Assert.Equal(1, fixture.ReportRepository.LockCount);
+    }
+
+    [Fact]
+    public async Task Create_entry_ignores_soft_deleted_entries_when_checking_quota()
+    {
+        var fixture = new Fixture();
+        var user = fixture.AddUser(monthlyQuota: 1);
+        var report = fixture.AddReport(user);
+        var deletedEntry = fixture.AddEntry(report);
+        deletedEntry.SoftDelete(Now);
+        var service = fixture.CreateCommandService();
+
+        var result = await service.CreateAsync(CreateCommand(report.Id), CancellationToken.None);
+
+        Assert.Equal(report.Id, result.ExpenseReportId);
+        Assert.Equal(1, fixture.UnitOfWork.SaveCount);
+        Assert.Equal(1, fixture.ReportRepository.LockCount);
     }
 
     [Fact]
@@ -104,6 +141,7 @@ public sealed class ExpenseEntryServiceTests
 
         Assert.Equal("expense_entry.not_found", exception.Code);
     }
+
     [Fact]
     public async Task Delete_entry_marks_it_as_deleted_and_commits()
     {
@@ -130,6 +168,7 @@ public sealed class ExpenseEntryServiceTests
 
         Assert.Equal("expense_entry.not_found", exception.Code);
     }
+
     [Fact]
     public async Task Invalid_create_command_is_rejected_before_persistence()
     {
@@ -175,6 +214,7 @@ public sealed class ExpenseEntryServiceTests
     private sealed class Fixture
     {
         public FakeExpenseEntryRepository EntryRepository { get; } = new();
+        public FakeUserRepository UserRepository { get; } = new();
         public FakeExpenseReportRepository ReportRepository { get; } = new();
         public FakeUnitOfWork UnitOfWork { get; } = new();
 
@@ -185,6 +225,7 @@ public sealed class ExpenseEntryServiceTests
             return new ExpenseEntryCommandService(
                 EntryRepository,
                 ReportRepository,
+                UserRepository,
                 new CreateExpenseEntryCommandValidator(options),
                 new UpdateExpenseEntryCommandValidator(options),
                 new FixedClock(),
@@ -192,12 +233,25 @@ public sealed class ExpenseEntryServiceTests
                 new NullApplicationLogger());
         }
 
-        public ExpenseReport AddReport()
+        public User AddUser(int monthlyQuota = 5)
         {
+            var user = User.Create(
+                Guid.NewGuid(),
+                PersonName.Create("Juste", "Leblanc"),
+                PostalAddress.Create("1 Rue des Notes", "75001", "Paris"),
+                MonthlyExpenseQuota.Create(monthlyQuota),
+                Now);
+            UserRepository.Users.Add(user);
+            return user;
+        }
+
+        public ExpenseReport AddReport(User? user = null)
+        {
+            user ??= AddUser();
             var report = ExpenseReport.Create(
                 Guid.NewGuid(),
-                Guid.NewGuid(),
-                "Juste Leblanc",
+                user.Id,
+                user.Name.FullName,
                 CalendarMonth.Create(2025, 10),
                 Now);
             ReportRepository.Reports.Add(report);
@@ -220,6 +274,32 @@ public sealed class ExpenseEntryServiceTests
         }
     }
 
+    private sealed class FakeUserRepository : IUserRepository
+    {
+        public List<User> Users { get; } = [];
+
+        public Task<IReadOnlyCollection<User>> ListAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyCollection<User>>(Users.Where(user => !user.IsDeleted).ToArray());
+        }
+
+        public Task<IReadOnlyCollection<User>> ListAssignableAsync(CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyCollection<User>>(Users.Where(user => user.CanBeAssignedToExpenseReport).ToArray());
+        }
+
+        public Task<User?> FindByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Users.FirstOrDefault(user => user.Id == id && !user.IsDeleted));
+        }
+
+        public Task AddAsync(User user, CancellationToken cancellationToken)
+        {
+            Users.Add(user);
+            return Task.CompletedTask;
+        }
+    }
+
     private sealed class FakeExpenseEntryRepository : IExpenseEntryRepository
     {
         public List<ExpenseEntry> Entries { get; } = [];
@@ -231,6 +311,10 @@ public sealed class ExpenseEntryServiceTests
                 .ToArray());
         }
 
+        public Task<int> CountActiveByReportAsync(Guid expenseReportId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Entries.Count(entry => entry.ExpenseReportId == expenseReportId && !entry.IsDeleted));
+        }
         public Task<ExpenseEntry?> FindActiveByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return Task.FromResult(Entries.FirstOrDefault(entry => entry.Id == id && !entry.IsDeleted));
@@ -257,6 +341,14 @@ public sealed class ExpenseEntryServiceTests
             return Task.FromResult(Reports.FirstOrDefault(report => report.Id == id));
         }
 
+        public int LockCount { get; private set; }
+
+        public Task<ExpenseReport?> FindByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
+        {
+            LockCount++;
+            return FindByIdAsync(id, cancellationToken);
+        }
+
         public Task<bool> ExistsForUserAndMonthAsync(Guid userId, CalendarMonth period, CancellationToken cancellationToken)
         {
             return Task.FromResult(Reports.Any(report => report.UserId == userId
@@ -274,6 +366,13 @@ public sealed class ExpenseEntryServiceTests
     private sealed class FakeUnitOfWork : IUnitOfWork
     {
         public int SaveCount { get; private set; }
+
+        public async Task<TResult> ExecuteInTransactionAsync<TResult>(
+            Func<CancellationToken, Task<TResult>> operation,
+            CancellationToken cancellationToken)
+        {
+            return await operation(cancellationToken);
+        }
 
         public Task SaveChangesAsync(CancellationToken cancellationToken)
         {

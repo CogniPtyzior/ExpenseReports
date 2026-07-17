@@ -4,6 +4,7 @@ using WebApi.Application.Core.Clock;
 using WebApi.Application.Core.Observability;
 using WebApi.Application.Core.Persistence;
 using WebApi.Application.ExpenseReports;
+using WebApi.Application.Users;
 using WebApi.Core.Exceptions;
 using WebApi.Domain.ExpenseEntries;
 
@@ -15,6 +16,7 @@ namespace WebApi.Application.ExpenseEntries;
 internal sealed class ExpenseEntryCommandService(
     IExpenseEntryRepository entries,
     IExpenseReportRepository reports,
+    IUserRepository users,
     IValidator<CreateExpenseEntryCommand> createValidator,
     IValidator<UpdateExpenseEntryCommand> updateValidator,
     IClock clock,
@@ -25,8 +27,24 @@ internal sealed class ExpenseEntryCommandService(
     {
         await createValidator.ValidateAndThrowAsync(command, cancellationToken);
 
-        var report = await reports.FindByIdAsync(command.ExpenseReportId, cancellationToken)
+        return await unitOfWork.ExecuteInTransactionAsync(async transactionCancellationToken =>
+            await CreateInTransactionAsync(command, transactionCancellationToken), cancellationToken);
+    }
+
+    private async Task<ExpenseEntryResult> CreateInTransactionAsync(
+        CreateExpenseEntryCommand command,
+        CancellationToken cancellationToken)
+    {
+        var report = await reports.FindByIdForUpdateAsync(command.ExpenseReportId, cancellationToken)
             ?? throw new NotFoundException("expense_report.not_found", "Expense report was not found.");
+
+        var user = await users.FindByIdAsync(report.UserId, cancellationToken)
+            ?? throw new NotFoundException("user.not_found", "User was not found.");
+        var activeEntryCount = await entries.CountActiveByReportAsync(report.Id, cancellationToken);
+        if (activeEntryCount >= user.MonthlyExpenseQuota.Value)
+        {
+            throw new ConflictException("expense_entry.monthly_quota_reached", "Monthly expense quota has been reached.");
+        }
 
         var entry = ExpenseEntry.Create(
             Guid.NewGuid(),

@@ -40,7 +40,8 @@ internal static class ExpenseEntryEndpoints
             .WithName("CreateExpenseEntry")
             .Produces<ExpenseEntryResult>(StatusCodes.Status201Created)
             .Produces(StatusCodes.Status400BadRequest)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces(StatusCodes.Status404NotFound)
+            .Produces(StatusCodes.Status409Conflict);
 
         var entryGroup = endpoints.MapGroup("/expense-entries")
             .WithTags("Expense Entries");

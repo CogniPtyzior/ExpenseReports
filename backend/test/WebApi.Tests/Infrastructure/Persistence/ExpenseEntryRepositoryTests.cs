@@ -38,6 +38,29 @@ public sealed class ExpenseEntryRepositoryTests
     }
 
     [Fact]
+    public async Task Count_active_by_report_excludes_soft_deleted_entries_and_other_reports()
+    {
+        using var db = CreateContext();
+        var user = CreateUser();
+        var report = CreateReport(user);
+        var otherReport = CreateReport(user, 2025, 11);
+        var deletedEntry = CreateEntry(report, new DateOnly(2025, 10, 16), "Taxi");
+        deletedEntry.SoftDelete(DateTime.UtcNow);
+        db.AddRange(
+            user,
+            report,
+            otherReport,
+            CreateEntry(report, new DateOnly(2025, 10, 15), "Lunch"),
+            deletedEntry,
+            CreateEntry(otherReport, new DateOnly(2025, 11, 1), "Hotel"));
+        await db.SaveChangesAsync();
+        var repository = new ExpenseEntryRepository(db);
+
+        var count = await repository.CountActiveByReportAsync(report.Id, CancellationToken.None);
+
+        Assert.Equal(1, count);
+    }
+    [Fact]
     public async Task List_active_by_report_orders_entries_by_expense_date()
     {
         using var db = CreateContext();

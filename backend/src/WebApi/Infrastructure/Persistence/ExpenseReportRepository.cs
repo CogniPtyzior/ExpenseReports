@@ -27,6 +27,19 @@ internal sealed class ExpenseReportRepository(AppDbContext dbContext) : IExpense
             .FirstOrDefaultAsync(report => report.Id == id, cancellationToken);
     }
 
+    public Task<ExpenseReport?> FindByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
+    {
+        if (dbContext.Database.ProviderName is not "Npgsql.EntityFrameworkCore.PostgreSQL")
+        {
+            return FindByIdAsync(id, cancellationToken);
+        }
+
+        return dbContext.Set<ExpenseReport>()
+            .FromSqlInterpolated($@"SELECT * FROM expense_reports WHERE ""Id"" = {id} FOR UPDATE")
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public Task<bool> ExistsForUserAndMonthAsync(Guid userId, CalendarMonth period, CancellationToken cancellationToken)
     {
         return dbContext.Set<ExpenseReport>()

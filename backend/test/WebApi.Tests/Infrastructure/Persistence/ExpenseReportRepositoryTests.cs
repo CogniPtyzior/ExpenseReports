@@ -43,6 +43,22 @@ public sealed class ExpenseReportRepositoryTests
             report => Assert.Equal(9, report.Period.Month));
     }
 
+    [Fact]
+    public async Task Find_by_id_for_update_finds_existing_report()
+    {
+        await using var db = CreateContext();
+        var user = CreateUser();
+        var report = CreateReport(user, 2025, 10);
+        db.Add(user);
+        db.Add(report);
+        await db.SaveChangesAsync();
+        var repository = new ExpenseReportRepository(db);
+
+        var found = await repository.FindByIdForUpdateAsync(report.Id, CancellationToken.None);
+
+        Assert.NotNull(found);
+        Assert.Equal(report.Id, found.Id);
+    }
     private static AppDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()

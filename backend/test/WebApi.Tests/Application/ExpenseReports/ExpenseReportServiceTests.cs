@@ -142,6 +142,11 @@ public sealed class ExpenseReportServiceTests
             return Task.FromResult(Reports.FirstOrDefault(report => report.Id == id));
         }
 
+        public Task<ExpenseReport?> FindByIdForUpdateAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return FindByIdAsync(id, cancellationToken);
+        }
+
         public Task<bool> ExistsForUserAndMonthAsync(Guid userId, CalendarMonth period, CancellationToken cancellationToken)
         {
             return Task.FromResult(Reports.Any(report => report.UserId == userId
@@ -159,6 +164,13 @@ public sealed class ExpenseReportServiceTests
     private sealed class FakeUnitOfWork : IUnitOfWork
     {
         public int SaveCount { get; private set; }
+
+        public async Task<TResult> ExecuteInTransactionAsync<TResult>(
+            Func<CancellationToken, Task<TResult>> operation,
+            CancellationToken cancellationToken)
+        {
+            return await operation(cancellationToken);
+        }
 
         public Task SaveChangesAsync(CancellationToken cancellationToken)
         {
