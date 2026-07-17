@@ -61,6 +61,29 @@ public sealed class ExpenseEntryRepositoryTests
         Assert.Equal(1, count);
     }
     [Fact]
+    public async Task List_active_by_report_applies_pagination_after_filtering_deleted_entries()
+    {
+        using var db = CreateContext();
+        var user = CreateUser();
+        var report = CreateReport(user);
+        var deletedEntry = CreateEntry(report, new DateOnly(2025, 10, 11), "Deleted");
+        deletedEntry.SoftDelete(DateTime.UtcNow);
+        db.AddRange(
+            user,
+            report,
+            CreateEntry(report, new DateOnly(2025, 10, 10), "A"),
+            deletedEntry,
+            CreateEntry(report, new DateOnly(2025, 10, 12), "B"),
+            CreateEntry(report, new DateOnly(2025, 10, 13), "C"));
+        await db.SaveChangesAsync();
+        var repository = new ExpenseEntryRepository(db);
+
+        var entries = await repository.ListActiveByReportAsync(report.Id, 2, 2, CancellationToken.None);
+
+        var entry = Assert.Single(entries);
+        Assert.Equal("C", entry.Description.Value);
+    }
+    [Fact]
     public async Task List_active_by_report_orders_entries_by_expense_date()
     {
         using var db = CreateContext();

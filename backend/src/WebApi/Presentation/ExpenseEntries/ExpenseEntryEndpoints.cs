@@ -1,6 +1,7 @@
 // Exposes expense entry HTTP endpoints while keeping endpoint logic thin.
 using FluentValidation;
 using WebApi.Application.ExpenseEntries;
+using WebApi.Core.Pagination;
 
 namespace WebApi.Presentation.ExpenseEntries;
 
@@ -27,6 +28,20 @@ internal static class ExpenseEntryEndpoints
     {
         var reportGroup = endpoints.MapGroup("/expense-reports/{expenseReportId:guid}/entries")
             .WithTags("Expense Entries");
+
+        reportGroup.MapGet("", async (
+                Guid expenseReportId,
+                int? pageNumber,
+                IExpenseEntryQueryService queries,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await queries.ListByReportAsync(expenseReportId, pageNumber ?? 1, cancellationToken);
+                return Results.Ok(result);
+            })
+            .WithName("ListExpenseEntries")
+            .Produces<PagedResult<ExpenseEntryResult>>()
+            .Produces(StatusCodes.Status400BadRequest)
+            .Produces(StatusCodes.Status404NotFound);
 
         reportGroup.MapPost("", async (
                 Guid expenseReportId,

@@ -40,6 +40,7 @@ public sealed class ApplicationDependencyInjectionTests
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IUserCommandService>());
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IUserQueryService>());
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IExpenseEntryCommandService>());
+        Assert.NotNull(scope.ServiceProvider.GetRequiredService<IExpenseEntryQueryService>());
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IExpenseReportCommandService>());
         Assert.NotNull(scope.ServiceProvider.GetRequiredService<IExpenseReportQueryService>());
     }
@@ -76,6 +77,15 @@ public sealed class ApplicationDependencyInjectionTests
     {
         public Task<IReadOnlyCollection<ExpenseEntry>> ListActiveByReportAsync(
             Guid expenseReportId,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyCollection<ExpenseEntry>>([]);
+        }
+
+        public Task<IReadOnlyCollection<ExpenseEntry>> ListActiveByReportAsync(
+            Guid expenseReportId,
+            int pageNumber,
+            int pageSize,
             CancellationToken cancellationToken)
         {
             return Task.FromResult<IReadOnlyCollection<ExpenseEntry>>([]);

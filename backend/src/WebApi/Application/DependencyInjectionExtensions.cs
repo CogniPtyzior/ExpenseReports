@@ -17,6 +17,7 @@ internal static class DependencyInjectionExtensions
         services.AddScoped<IUserCommandService, UserCommandService>();
         services.AddScoped<IUserQueryService, UserQueryService>();
         services.AddScoped<IExpenseEntryCommandService, ExpenseEntryCommandService>();
+        services.AddScoped<IExpenseEntryQueryService, ExpenseEntryQueryService>();
         services.AddScoped<IExpenseReportCommandService, ExpenseReportCommandService>();
         services.AddScoped<IExpenseReportQueryService, ExpenseReportQueryService>();
 

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using WebApi.Application.ExpenseEntries;
 using WebApi.Core.Exceptions;
+using WebApi.Core.Pagination;
 using WebApi.Presentation.Errors;
 using WebApi.Presentation.ExpenseEntries;
 
@@ -19,6 +20,21 @@ public sealed class ExpenseEntryEndpointTests
     private static readonly Guid ReportId = Guid.Parse("33333333-3333-3333-3333-333333333333");
     private static readonly Guid EntryId = Guid.Parse("44444444-4444-4444-4444-444444444444");
 
+    [Fact]
+    public async Task Get_entries_returns_paged_entries()
+    {
+        await using var app = await CreateAppAsync(new FakeExpenseEntryCommandService(), new FakeExpenseEntryQueryService());
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync($"/expense-reports/{ReportId}/entries?pageNumber=2");
+
+        response.EnsureSuccessStatusCode();
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(2, json.RootElement.GetProperty("pageNumber").GetInt32());
+        Assert.Equal(5, json.RootElement.GetProperty("pageSize").GetInt32());
+        Assert.Equal(6, json.RootElement.GetProperty("totalCount").GetInt32());
+        Assert.Equal(EntryId, json.RootElement.GetProperty("items")[0].GetProperty("id").GetGuid());
+    }
     [Fact]
     public async Task Post_entry_returns_created_entry()
     {
@@ -113,12 +129,15 @@ public sealed class ExpenseEntryEndpointTests
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal("validation.failed", json.RootElement.GetProperty("code").GetString());
     }
-    private static async Task<WebApplication> CreateAppAsync(IExpenseEntryCommandService commands)
+    private static async Task<WebApplication> CreateAppAsync(
+        IExpenseEntryCommandService commands,
+        IExpenseEntryQueryService? queries = null)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Services.AddLogging();
         builder.Services.AddSingleton(commands);
+        builder.Services.AddSingleton(queries ?? new FakeExpenseEntryQueryService());
 
         var app = builder.Build();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -161,6 +180,17 @@ public sealed class ExpenseEntryEndpointTests
             "Paris",
             DateTime.UtcNow,
             null);
+    }
+
+    private sealed class FakeExpenseEntryQueryService : IExpenseEntryQueryService
+    {
+        public Task<PagedResult<ExpenseEntryResult>> ListByReportAsync(
+            Guid expenseReportId,
+            int pageNumber,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new PagedResult<ExpenseEntryResult>([Result()], pageNumber, 5, 6));
+        }
     }
 
     private class FakeExpenseEntryCommandService : IExpenseEntryCommandService

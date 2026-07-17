@@ -311,6 +311,21 @@ public sealed class ExpenseEntryServiceTests
                 .ToArray());
         }
 
+        public Task<IReadOnlyCollection<ExpenseEntry>> ListActiveByReportAsync(
+            Guid expenseReportId,
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IReadOnlyCollection<ExpenseEntry>>(Entries
+                .Where(entry => entry.ExpenseReportId == expenseReportId && !entry.IsDeleted)
+                .OrderBy(entry => entry.ExpenseDate)
+                .ThenBy(entry => entry.CreatedAtUtc)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToArray());
+        }
+
         public Task<int> CountActiveByReportAsync(Guid expenseReportId, CancellationToken cancellationToken)
         {
             return Task.FromResult(Entries.Count(entry => entry.ExpenseReportId == expenseReportId && !entry.IsDeleted));

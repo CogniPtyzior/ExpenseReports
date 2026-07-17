@@ -10,6 +10,12 @@ internal interface IExpenseEntryRepository
 {
     Task<IReadOnlyCollection<ExpenseEntry>> ListActiveByReportAsync(Guid expenseReportId, CancellationToken cancellationToken);
 
+    Task<IReadOnlyCollection<ExpenseEntry>> ListActiveByReportAsync(
+        Guid expenseReportId,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken);
+
     Task<int> CountActiveByReportAsync(Guid expenseReportId, CancellationToken cancellationToken);
 
     Task<ExpenseEntry?> FindActiveByIdAsync(Guid id, CancellationToken cancellationToken);

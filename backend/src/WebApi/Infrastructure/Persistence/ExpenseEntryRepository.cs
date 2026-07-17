@@ -22,6 +22,22 @@ internal sealed class ExpenseEntryRepository(AppDbContext dbContext) : IExpenseE
             .ToArrayAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyCollection<ExpenseEntry>> ListActiveByReportAsync(
+        Guid expenseReportId,
+        int pageNumber,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Set<ExpenseEntry>()
+            .AsNoTracking()
+            .Where(entry => entry.ExpenseReportId == expenseReportId && !entry.IsDeleted)
+            .OrderBy(entry => entry.ExpenseDate)
+            .ThenBy(entry => entry.CreatedAtUtc)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToArrayAsync(cancellationToken);
+    }
+
     public Task<int> CountActiveByReportAsync(Guid expenseReportId, CancellationToken cancellationToken)
     {
         return dbContext.Set<ExpenseEntry>()
