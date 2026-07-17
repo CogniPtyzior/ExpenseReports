@@ -1,0 +1,19 @@
+.empty-state {
+  border: 1px solid #d9dfeb;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 1.25rem;
+}
+
+.empty-state h2 {
+  margin: 0;
+  color: #172033;
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.empty-state p {
+  margin: 0.45rem 0 0;
+  color: #5c667a;
+  line-height: 1.45;
+}

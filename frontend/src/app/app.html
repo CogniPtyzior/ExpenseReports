@@ -1,2 +1,24 @@
-<app-nx-welcome></app-nx-welcome>
-<router-outlet></router-outlet>
+<div class="app-shell">
+  <header class="app-header">
+    <a class="brand" routerLink="/reports" aria-label="Expense Management accueil">
+      <span class="brand-mark">Expense Management</span>
+      <span class="brand-text">Gestion des notes de frais</span>
+    </a>
+
+    <nav class="main-nav" aria-label="Navigation principale">
+      @for (item of navigation; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: item.path === '/reports' }"
+        >
+          {{ item.label }}
+        </a>
+      }
+    </nav>
+  </header>
+
+  <main class="app-main">
+    <router-outlet />
+  </main>
+</div>
