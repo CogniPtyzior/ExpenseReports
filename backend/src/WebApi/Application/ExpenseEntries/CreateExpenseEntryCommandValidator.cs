@@ -10,6 +10,8 @@ namespace WebApi.Application.ExpenseEntries;
 /// </summary>
 internal sealed class CreateExpenseEntryCommandValidator : AbstractValidator<CreateExpenseEntryCommand>
 {
+    private const string FrenchPostalCodePattern = @"^\d{5}$";
+
     public CreateExpenseEntryCommandValidator(IOptions<ExpenseRulesOptions> options)
     {
         var rules = options.Value;
@@ -20,7 +22,10 @@ internal sealed class CreateExpenseEntryCommandValidator : AbstractValidator<Cre
         RuleFor(command => command.Amount).GreaterThan(0);
         RuleFor(command => command.MerchantName).NotEmpty();
         RuleFor(command => command.Street).NotEmpty();
-        RuleFor(command => command.PostalCode).NotEmpty();
+        RuleFor(command => command.PostalCode)
+            .NotEmpty()
+            .Matches(FrenchPostalCodePattern)
+            .WithMessage("Billing postal code must contain exactly 5 digits.");
         RuleFor(command => command.City).NotEmpty();
     }
 }
