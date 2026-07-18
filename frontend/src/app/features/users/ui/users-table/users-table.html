@@ -1,0 +1,36 @@
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Utilisateur</th>
+        <th>Adresse</th>
+        <th>Quota</th>
+        <th>Statut</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of users(); track user.id) {
+      <tr>
+        <td>
+          <strong>{{ user.fullName }}</strong>
+          <small>{{ user.firstName }} {{ user.lastName }}</small>
+        </td>
+        <td>{{ user.street }}, {{ user.postalCode }} {{ user.city }}</td>
+        <td>{{ user.monthlyExpenseQuota }} dépenses/mois</td>
+        <td>
+          <span
+            class="status"
+            [class.inactive]="!user.canBeAssignedToExpenseReport"
+          >
+            {{
+              user.canBeAssignedToExpenseReport
+                ? "Affectable"
+                : "Non affectable"
+            }}
+          </span>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>

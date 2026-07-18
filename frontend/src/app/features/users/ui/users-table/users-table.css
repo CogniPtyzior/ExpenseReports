@@ -1,0 +1,43 @@
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border-bottom: 1px solid #d9dfeb;
+  padding: 0.85rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: #5c667a;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+small {
+  display: block;
+  color: #667085;
+  margin-top: 0.2rem;
+}
+
+.status {
+  border-radius: 999px;
+  background: #e4f3ea;
+  color: #277148;
+  display: inline-block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+}
+
+.status.inactive {
+  background: #f7e7e7;
+  color: #9a3a3a;
+}

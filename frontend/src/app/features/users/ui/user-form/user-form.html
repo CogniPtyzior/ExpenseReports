@@ -1,0 +1,69 @@
+<form class="form" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="form-grid">
+    <label>
+      Prénom
+      <input
+        type="text"
+        formControlName="firstName"
+        autocomplete="given-name"
+      />
+      @if (hasError('firstName')) {
+      <span>Le prénom est requis.</span>
+      }
+    </label>
+
+    <label>
+      Nom
+      <input
+        type="text"
+        formControlName="lastName"
+        autocomplete="family-name"
+      />
+      @if (hasError('lastName')) {
+      <span>Le nom est requis.</span>
+      }
+    </label>
+
+    <label class="full">
+      Rue
+      <input
+        type="text"
+        formControlName="street"
+        autocomplete="street-address"
+      />
+      @if (hasError('street')) {
+      <span>La rue est requise.</span>
+      }
+    </label>
+
+    <label>
+      Code postal
+      <input
+        type="text"
+        formControlName="postalCode"
+        autocomplete="postal-code"
+      />
+      @if (hasError('postalCode')) {
+      <span>Le code postal est requis.</span>
+      }
+    </label>
+
+    <label>
+      Ville
+      <input type="text" formControlName="city" autocomplete="address-level2" />
+      @if (hasError('city')) {
+      <span>La ville est requise.</span>
+      }
+    </label>
+
+    <label>
+      Quota mensuel
+      <input type="number" min="1" formControlName="monthlyExpenseQuota" />
+      @if (hasError('monthlyExpenseQuota')) {
+      <span>Le quota doit être positif.</span>
+      }
+    </label>
+  </div>
+
+  <button type="submit">Créer l'utilisateur</button>
+</form>

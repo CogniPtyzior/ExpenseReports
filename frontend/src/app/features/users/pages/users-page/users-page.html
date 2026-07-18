@@ -1,9 +1,34 @@
 <app-page-header
   title="Utilisateurs"
-  description="Consultez les utilisateurs et préparez la création d'un utilisateur pour les notes de frais."
+  description="Création et consultation des utilisateurs disponibles pour les notes de frais."
 />
 
-<app-empty-state
-  title="Flux utilisateur à implémenter"
-  message="FRONTEND1 ajoutera la liste et le formulaire Reactive Forms de création utilisateur."
-/>
+<div class="page-grid">
+  <section class="panel">
+    <h2>Créer un utilisateur</h2>
+    @if (createError(); as error) {
+    <p class="error">{{ error.message }}</p>
+    }
+    <app-user-form (createUser)="createUser($event)" />
+  </section>
+
+  <section class="panel">
+    <div class="section-heading">
+      <h2>Utilisateurs enregistrés</h2>
+      @if (loading()) {
+      <span>Chargement...</span>
+      }
+    </div>
+
+    @if (usersState$ | async; as state) { @if (state.error) {
+    <p class="error">{{ state.error.message }}</p>
+    } @else if (state.users.length === 0) {
+    <app-empty-state
+      title="Aucun utilisateur"
+      message="Créez un utilisateur pour pouvoir lui affecter une note de frais."
+    />
+    } @else {
+    <app-users-table [users]="state.users" />
+    } }
+  </section>
+</div>

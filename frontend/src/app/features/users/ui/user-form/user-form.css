@@ -1,0 +1,53 @@
+.form {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  color: #344054;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  border: 1px solid #c9d2e3;
+  border-radius: 6px;
+  padding: 0.6rem 0.7rem;
+  color: #172033;
+}
+
+span {
+  color: #a23b3b;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+button {
+  justify-self: start;
+  border: 0;
+  border-radius: 6px;
+  background: #174ea6;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.65rem 0.95rem;
+}
+
+@media (max-width: 720px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
