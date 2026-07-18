@@ -8,6 +8,7 @@ import {
 } from "../../../../core/config/frontend-config";
 import { ExpenseEntriesApi } from "../../../expense-entries/data-access/expense-entries-api";
 import {
+  CreateExpenseEntryRequest,
   ExpenseEntry,
   PagedResult,
 } from "../../../expense-entries/models/expense-entry.model";
@@ -42,6 +43,18 @@ const entry: ExpenseEntry = {
   updatedAtUtc: null,
 };
 
+const createRequest: CreateExpenseEntryRequest = {
+  expenseDate: "2025-11-15",
+  description: "Taxi",
+  amount: 34,
+  billingAddress: {
+    merchantName: "Taxi Lyon",
+    street: "24 Avenue des Frais",
+    postalCode: "69002",
+    city: "Lyon",
+  },
+};
+
 function pagedEntries(pageNumber: number): PagedResult<ExpenseEntry> {
   return {
     items: [entry],
@@ -61,7 +74,7 @@ class ExpenseReportsApiStub {
 
 class ExpenseEntriesApiStub {
   readonly listEntries = vi.fn((_reportId: string, pageNumber: number) =>
-    of(pagedEntries(pageNumber))
+    of(pagedEntries(pageNumber)),
   );
   readonly createEntry = vi.fn(() => of(entry));
 }
@@ -95,13 +108,13 @@ describe("ExpenseReportDetailPage", () => {
     expect(expenseReportsApi.getReport).toHaveBeenCalledWith("report-1");
     expect(expenseEntriesApi.listEntries).toHaveBeenCalledWith("report-1", 1);
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      "Marc Assin - Novembre 2025"
+      "Marc Assin - Novembre 2025",
     );
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      "Train"
+      "Train",
     );
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      "Page 1 / 2"
+      "Page 1 / 2",
     );
   });
 
@@ -114,23 +127,66 @@ describe("ExpenseReportDetailPage", () => {
 
     expect(expenseEntriesApi.listEntries).toHaveBeenLastCalledWith(
       "report-1",
-      2
+      2,
     );
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      "Page 2 / 2"
+      "Page 2 / 2",
+    );
+  });
+
+  it("refreshes the first page after a successful expense creation", () => {
+    const fixture = TestBed.createComponent(ExpenseReportDetailPage);
+
+    fixture.detectChanges();
+    fixture.componentInstance.goToPage(2);
+    fixture.detectChanges();
+    fixture.componentInstance.createEntry(createRequest);
+    fixture.detectChanges();
+
+    expect(expenseEntriesApi.createEntry).toHaveBeenCalledWith(
+      "report-1",
+      createRequest,
+    );
+    expect(expenseEntriesApi.listEntries).toHaveBeenLastCalledWith(
+      "report-1",
+      1,
+    );
+  });
+
+  it("displays localized business errors raised while creating an expense", () => {
+    expenseEntriesApi.createEntry.mockReturnValueOnce(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 409,
+            error: {
+              code: "expense_entry.monthly_quota_reached",
+              message: "Monthly quota reached.",
+            },
+          }),
+      ),
+    );
+    const fixture = TestBed.createComponent(ExpenseReportDetailPage);
+
+    fixture.detectChanges();
+    fixture.componentInstance.createEntry(createRequest);
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      "Le quota mensuel de dépenses est atteint pour cet utilisateur.",
     );
   });
 
   it("displays API errors raised while loading the detail", () => {
     expenseReportsApi.getReport.mockReturnValueOnce(
-      throwError(() => new HttpErrorResponse({ status: 404 }))
+      throwError(() => new HttpErrorResponse({ status: 404 })),
     );
     const fixture = TestBed.createComponent(ExpenseReportDetailPage);
 
     fixture.detectChanges();
 
     expect((fixture.nativeElement as HTMLElement).textContent).toContain(
-      "Une erreur est survenue"
+      "Une erreur est survenue",
     );
   });
 });

@@ -3,63 +3,76 @@
   description="Consultation des dépenses actives par lots de 5."
 />
 
-@if (detailState$ | async; as state) { @if (state.error) {
-<p class="error">{{ state.error.message }}</p>
-} @else if (state.report && state.entries) {
-<section class="summary-panel">
-  <div>
-    <span>Note</span>
-    <strong>{{ state.report.title }}</strong>
-  </div>
-  <div>
-    <span>Utilisateur</span>
-    <strong>{{ state.report.assignedUserFullName }}</strong>
-  </div>
-  <div>
-    <span>Période</span>
-    <strong>{{ state.report.month }}/{{ state.report.year }}</strong>
-  </div>
-</section>
+@if (detailState$ | async; as state) {
+  @if (state.error) {
+    <p class="error">{{ state.error.message }}</p>
+  } @else if (state.report && state.entries) {
+    <section class="summary-panel">
+      <div>
+        <span>Note</span>
+        <strong>{{ state.report.title }}</strong>
+      </div>
+      <div>
+        <span>Utilisateur</span>
+        <strong>{{ state.report.assignedUserFullName }}</strong>
+      </div>
+      <div>
+        <span>Période</span>
+        <strong>{{ state.report.month }}/{{ state.report.year }}</strong>
+      </div>
+    </section>
 
-<section class="panel">
-  <div class="section-heading">
-    <div>
-      <h2>Dépenses enregistrées</h2>
-      <p>{{ state.entries.totalCount }} dépense(s) active(s)</p>
-    </div>
-    @if (loading()) {
-    <span>Chargement...</span>
-    }
-  </div>
+    <section class="panel">
+      <h2>Ajouter une dépense</h2>
+      @if (createError(); as error) {
+        <p class="error">{{ error.message }}</p>
+      }
+      <app-expense-entry-form
+        [reportPeriod]="{ year: state.report.year, month: state.report.month }"
+        (createEntry)="createEntry($event)"
+      />
+    </section>
 
-  @if (state.entries.items.length === 0) {
-  <app-empty-state
-    title="Aucune dépense"
-    message="Cette note ne contient aucune dépense active."
-  />
-  } @else {
-  <app-expense-entries-table [entries]="state.entries.items" />
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <h2>Dépenses enregistrées</h2>
+          <p>{{ state.entries.totalCount }} dépense(s) active(s)</p>
+        </div>
+        @if (loading()) {
+          <span>Chargement...</span>
+        }
+      </div>
 
-  <nav class="pagination" aria-label="Pagination des dépenses">
-    <button
-      type="button"
-      [disabled]="state.entries.pageNumber <= 1"
-      (click)="goToPage(state.entries.pageNumber - 1)"
-    >
-      Précédent
-    </button>
-    <span
-      >Page {{ state.entries.pageNumber }} /
-      {{ state.entries.totalPages }}</span
-    >
-    <button
-      type="button"
-      [disabled]="state.entries.pageNumber >= state.entries.totalPages"
-      (click)="goToPage(state.entries.pageNumber + 1)"
-    >
-      Suivant
-    </button>
-  </nav>
+      @if (state.entries.items.length === 0) {
+        <app-empty-state
+          title="Aucune dépense"
+          message="Cette note ne contient aucune dépense active."
+        />
+      } @else {
+        <app-expense-entries-table [entries]="state.entries.items" />
+
+        <nav class="pagination" aria-label="Pagination des dépenses">
+          <button
+            type="button"
+            [disabled]="state.entries.pageNumber <= 1"
+            (click)="goToPage(state.entries.pageNumber - 1)"
+          >
+            Précédent
+          </button>
+          <span
+            >Page {{ state.entries.pageNumber }} /
+            {{ state.entries.totalPages }}</span
+          >
+          <button
+            type="button"
+            [disabled]="state.entries.pageNumber >= state.entries.totalPages"
+            (click)="goToPage(state.entries.pageNumber + 1)"
+          >
+            Suivant
+          </button>
+        </nav>
+      }
+    </section>
   }
-</section>
-} }
+}

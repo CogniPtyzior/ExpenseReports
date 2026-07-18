@@ -7,8 +7,8 @@
         formControlName="firstName"
         autocomplete="given-name"
       />
-      @if (hasError('firstName')) {
-      <span>Le prénom est requis.</span>
+      @if (hasError("firstName")) {
+        <span>Le prénom est requis.</span>
       }
     </label>
 
@@ -19,8 +19,8 @@
         formControlName="lastName"
         autocomplete="family-name"
       />
-      @if (hasError('lastName')) {
-      <span>Le nom est requis.</span>
+      @if (hasError("lastName")) {
+        <span>Le nom est requis.</span>
       }
     </label>
 
@@ -31,8 +31,8 @@
         formControlName="street"
         autocomplete="street-address"
       />
-      @if (hasError('street')) {
-      <span>La rue est requise.</span>
+      @if (hasError("street")) {
+        <span>La rue est requise.</span>
       }
     </label>
 
@@ -43,24 +43,27 @@
         formControlName="postalCode"
         autocomplete="postal-code"
       />
-      @if (hasError('postalCode')) {
-      <span>Le code postal est requis.</span>
+      @if (hasError("postalCode", "required")) {
+        <span>Le code postal est requis.</span>
+      }
+      @if (hasError("postalCode", "pattern")) {
+        <span>Le code postal doit contenir 5 chiffres.</span>
       }
     </label>
 
     <label>
       Ville
       <input type="text" formControlName="city" autocomplete="address-level2" />
-      @if (hasError('city')) {
-      <span>La ville est requise.</span>
+      @if (hasError("city")) {
+        <span>La ville est requise.</span>
       }
     </label>
 
     <label>
       Quota mensuel
       <input type="number" min="1" formControlName="monthlyExpenseQuota" />
-      @if (hasError('monthlyExpenseQuota')) {
-      <span>Le quota doit être positif.</span>
+      @if (hasError("monthlyExpenseQuota")) {
+        <span>Le quota doit être positif.</span>
       }
     </label>
   </div>

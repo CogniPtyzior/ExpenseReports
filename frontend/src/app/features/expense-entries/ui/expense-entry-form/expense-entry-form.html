@@ -1,0 +1,77 @@
+<form class="form" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="form-grid">
+    <label>
+      Date
+      <input type="date" formControlName="expenseDate" />
+      @if (hasError("expenseDate", "required")) {
+        <span>La date est requise.</span>
+      }
+      @if (hasError("expenseDate", "outsideReportMonth")) {
+        <span>La date doit appartenir au mois de la note.</span>
+      }
+    </label>
+
+    <label>
+      Montant (EUR)
+      <input type="number" min="0.01" step="0.01" formControlName="amount" />
+      @if (hasError("amount")) {
+        <span>Le montant doit être positif.</span>
+      }
+    </label>
+
+    <label class="full">
+      Description
+      <input
+        type="text"
+        formControlName="description"
+        [attr.maxlength]="descriptionMaxLength"
+      />
+      @if (hasError("description", "required")) {
+        <span>La description est requise.</span>
+      }
+      @if (hasError("description", "maxlength")) {
+        <span
+          >La description est limitée à
+          {{ descriptionMaxLength }} caractères.</span
+        >
+      }
+    </label>
+
+    <label class="full">
+      Enseigne
+      <input type="text" formControlName="merchantName" />
+      @if (hasError("merchantName")) {
+        <span>L'enseigne est requise.</span>
+      }
+    </label>
+
+    <label class="full">
+      Rue
+      <input type="text" formControlName="street" />
+      @if (hasError("street")) {
+        <span>La rue est requise.</span>
+      }
+    </label>
+
+    <label>
+      Code postal
+      <input type="text" formControlName="postalCode" />
+      @if (hasError("postalCode", "required")) {
+        <span>Le code postal est requis.</span>
+      }
+      @if (hasError("postalCode", "pattern")) {
+        <span>Le code postal doit contenir 5 chiffres.</span>
+      }
+    </label>
+
+    <label>
+      Ville
+      <input type="text" formControlName="city" />
+      @if (hasError("city")) {
+        <span>La ville est requise.</span>
+      }
+    </label>
+  </div>
+
+  <button type="submit">Ajouter la dépense</button>
+</form>

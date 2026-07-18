@@ -10,6 +10,11 @@ interface ApiErrorBody {
 const localizedBusinessMessages: Record<string, string> = {
   "expense_report.already_exists":
     "Une note existe déjà pour cet utilisateur et ce mois.",
+  "expense_entry.date_outside_report_month":
+    "La date de dépense doit appartenir au mois de la note.",
+  "expense_entry.monthly_quota_reached":
+    "Le quota mensuel de dépenses est atteint pour cet utilisateur.",
+  "validation.failed": "Les données saisies sont invalides.",
 };
 
 export function mapApiError(error: unknown): ApiError {

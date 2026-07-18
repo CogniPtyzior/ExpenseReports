@@ -21,7 +21,7 @@ export class UserForm {
     firstName: ["", [Validators.required]],
     lastName: ["", [Validators.required]],
     street: ["", [Validators.required]],
-    postalCode: ["", [Validators.required]],
+    postalCode: ["", [Validators.required, Validators.pattern(/^\d{5}$/)]],
     city: ["", [Validators.required]],
     monthlyExpenseQuota: [5, [Validators.required, Validators.min(1)]],
   });
@@ -43,8 +43,11 @@ export class UserForm {
     });
   }
 
-  hasError(controlName: keyof typeof this.form.controls) {
+  hasError(controlName: keyof typeof this.form.controls, errorCode?: string) {
     const control = this.form.controls[controlName];
-    return control.invalid && (control.touched || control.dirty);
+    const hasRequestedError = errorCode
+      ? control.hasError(errorCode)
+      : control.invalid;
+    return hasRequestedError && (control.touched || control.dirty);
   }
 }
