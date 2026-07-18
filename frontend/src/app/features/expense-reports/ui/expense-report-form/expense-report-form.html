@@ -1,0 +1,39 @@
+<form class="form" [formGroup]="form" (ngSubmit)="submit()">
+  <div class="form-grid">
+    <label class="full">
+      Utilisateur
+      <select formControlName="userId">
+        <option value="">Sélectionner un utilisateur</option>
+        @for (user of users(); track user.id) {
+        <option [value]="user.id">{{ user.fullName }}</option>
+        }
+      </select>
+      @if (hasError('userId')) {
+      <span>Un utilisateur affectable est requis.</span>
+      }
+    </label>
+
+    <label>
+      Année
+      <select formControlName="year">
+        @for (year of years; track year) {
+        <option [ngValue]="year">{{ year }}</option>
+        }
+      </select>
+    </label>
+
+    <label>
+      Mois
+      <select formControlName="month">
+        @for (month of months; track month.value) {
+        <option [ngValue]="month.value">{{ month.label }}</option>
+        }
+      </select>
+      @if (hasError('month')) {
+      <span>Le mois doit être compris entre 1 et 12.</span>
+      }
+    </label>
+  </div>
+
+  <button type="submit" [disabled]="users().length === 0">Créer la note</button>
+</form>

@@ -1,9 +1,45 @@
 <app-page-header
   title="Notes de frais"
-  description="Consultez les notes mensuelles et préparez leur création pour un utilisateur affectable."
+  description="Création et consultation des notes mensuelles, une par utilisateur et par mois."
 />
 
-<app-empty-state
-  title="Flux notes de frais à implémenter"
-  message="FRONTEND1 ajoutera la liste, la création et l'affichage des conflits métier."
-/>
+@if (reportsState$ | async; as state) {
+<div class="page-grid">
+  <section class="panel">
+    <h2>Créer une note</h2>
+    @if (createError(); as error) {
+    <p class="error">{{ error.message }}</p>
+    } @if (state.users.length === 0) {
+    <app-empty-state
+      title="Aucun utilisateur affectable"
+      message="Activez ou créez un utilisateur pour créer une note de frais."
+    />
+    } @else {
+    <app-expense-report-form
+      [users]="state.users"
+      (createReport)="createReport($event)"
+    />
+    }
+  </section>
+
+  <section class="panel">
+    <div class="section-heading">
+      <h2>Notes enregistrées</h2>
+      @if (loading()) {
+      <span>Chargement...</span>
+      }
+    </div>
+
+    @if (state.error) {
+    <p class="error">{{ state.error.message }}</p>
+    } @else if (state.reports.length === 0) {
+    <app-empty-state
+      title="Aucune note de frais"
+      message="Créez une note mensuelle pour commencer le suivi."
+    />
+    } @else {
+    <app-expense-reports-table [reports]="state.reports" />
+    }
+  </section>
+</div>
+}

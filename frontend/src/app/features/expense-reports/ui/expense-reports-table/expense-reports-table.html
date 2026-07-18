@@ -1,0 +1,28 @@
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Note</th>
+        <th>Utilisateur</th>
+        <th>Période</th>
+        <th>Créée le</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (report of reports(); track report.id) {
+      <tr>
+        <td>
+          <strong>{{ report.title }}</strong>
+        </td>
+        <td>{{ report.assignedUserFullName }}</td>
+        <td>{{ report.month }}/{{ report.year }}</td>
+        <td>{{ report.createdAtUtc | date : "dd/MM/yyyy HH:mm" }}</td>
+        <td>
+          <a [routerLink]="['/reports', report.id]">Ouvrir</a>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
