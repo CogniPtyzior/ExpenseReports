@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from "@angular/common/http";
-import { convertToParamMap, ActivatedRoute } from "@angular/router";
+import { convertToParamMap, ActivatedRoute, Router } from "@angular/router";
 import { BehaviorSubject, of, throwError } from "rxjs";
 import { TestBed } from "@angular/core/testing";
 import {
@@ -79,14 +79,20 @@ class ExpenseEntriesApiStub {
   readonly createEntry = vi.fn(() => of(entry));
 }
 
+class RouterStub {
+  readonly navigate = vi.fn(() => Promise.resolve(true));
+}
+
 describe("ExpenseReportDetailPage", () => {
   let expenseReportsApi: ExpenseReportsApiStub;
   let expenseEntriesApi: ExpenseEntriesApiStub;
+  let router: RouterStub;
   let paramMap: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
     expenseReportsApi = new ExpenseReportsApiStub();
     expenseEntriesApi = new ExpenseEntriesApiStub();
+    router = new RouterStub();
     paramMap = new BehaviorSubject(convertToParamMap({ id: "report-1" }));
 
     await TestBed.configureTestingModule({
@@ -95,6 +101,7 @@ describe("ExpenseReportDetailPage", () => {
         { provide: ExpenseReportsApi, useValue: expenseReportsApi },
         { provide: ExpenseEntriesApi, useValue: expenseEntriesApi },
         { provide: ActivatedRoute, useValue: { paramMap } },
+        { provide: Router, useValue: router },
         { provide: FRONTEND_CONFIG, useValue: defaultFrontendConfig },
       ],
     }).compileComponents();
@@ -150,6 +157,46 @@ describe("ExpenseReportDetailPage", () => {
     expect(expenseEntriesApi.listEntries).toHaveBeenLastCalledWith(
       "report-1",
       1,
+    );
+  });
+
+  it("does not delete the report when confirmation is cancelled", () => {
+    vi.spyOn(window, "confirm").mockReturnValueOnce(false);
+    const fixture = TestBed.createComponent(ExpenseReportDetailPage);
+
+    fixture.detectChanges();
+    fixture.componentInstance.deleteReport();
+
+    expect(window.confirm).toHaveBeenCalledWith(
+      expect.stringContaining("supprimée définitivement avec ses dépenses"),
+    );
+    expect(expenseReportsApi.deleteReport).not.toHaveBeenCalled();
+  });
+
+  it("deletes the report and returns to the reports list when confirmed", () => {
+    vi.spyOn(window, "confirm").mockReturnValueOnce(true);
+    const fixture = TestBed.createComponent(ExpenseReportDetailPage);
+
+    fixture.detectChanges();
+    fixture.componentInstance.deleteReport();
+
+    expect(expenseReportsApi.deleteReport).toHaveBeenCalledWith("report-1");
+    expect(router.navigate).toHaveBeenCalledWith(["/reports"]);
+  });
+
+  it("displays API errors raised while deleting the report", () => {
+    vi.spyOn(window, "confirm").mockReturnValueOnce(true);
+    expenseReportsApi.deleteReport.mockReturnValueOnce(
+      throwError(() => new HttpErrorResponse({ status: 404 })),
+    );
+    const fixture = TestBed.createComponent(ExpenseReportDetailPage);
+
+    fixture.detectChanges();
+    fixture.componentInstance.deleteReport();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain(
+      "Une erreur est survenue",
     );
   });
 

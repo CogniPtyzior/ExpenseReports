@@ -1,7 +1,7 @@
 // Expense report detail page coordinates report loading and expense entry workflows.
 import { AsyncPipe } from "@angular/common";
 import { Component, inject, signal } from "@angular/core";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import {
   BehaviorSubject,
   catchError,
@@ -49,6 +49,7 @@ interface ExpenseReportDetailState {
 })
 export class ExpenseReportDetailPage {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly expenseReportsApi = inject(ExpenseReportsApi);
   private readonly expenseEntriesApi = inject(ExpenseEntriesApi);
   private readonly requestedPage = new BehaviorSubject(1);
@@ -63,7 +64,9 @@ export class ExpenseReportDetailPage {
   );
 
   readonly loading = signal(false);
+  readonly deleting = signal(false);
   readonly createError = signal<ApiError | null>(null);
+  readonly deleteError = signal<ApiError | null>(null);
   readonly currentReportId = signal("");
   readonly detailState$ = combineLatest([
     this.reportId$,
@@ -109,5 +112,32 @@ export class ExpenseReportDetailPage {
         },
         error: (error) => this.createError.set(mapApiError(error)),
       });
+  }
+
+  deleteReport() {
+    this.deleteError.set(null);
+    if (!this.confirmReportDeletion()) {
+      return;
+    }
+
+    this.deleting.set(true);
+    this.expenseReportsApi
+      .deleteReport(this.currentReportId())
+      .pipe(
+        take(1),
+        finalize(() => this.deleting.set(false)),
+      )
+      .subscribe({
+        next: () => void this.router.navigate(["/reports"]),
+        error: (error) => this.deleteError.set(mapApiError(error)),
+      });
+  }
+
+  private confirmReportDeletion() {
+    return window.confirm(
+      "Cette note sera supprimée définitivement avec ses dépenses. " +
+        "Cette règle lève une ambiguïté du besoin ; des règles métier " +
+        "et d'archivage devraient être précisées avant une mise en production.",
+    );
   }
 }

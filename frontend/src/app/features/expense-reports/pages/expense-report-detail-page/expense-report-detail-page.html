@@ -1,6 +1,6 @@
 <app-page-header
   title="Détail d'une note"
-  description="Consultation des dépenses actives par lots de 5."
+  description="Consultation des dépenses actives paginées."
 />
 
 @if (detailState$ | async; as state) {
@@ -20,7 +20,19 @@
         <span>Période</span>
         <strong>{{ state.report.month }}/{{ state.report.year }}</strong>
       </div>
+      <button
+        class="danger-button"
+        type="button"
+        [disabled]="deleting()"
+        (click)="deleteReport()"
+      >
+        Supprimer la note
+      </button>
     </section>
+
+    @if (deleteError(); as error) {
+      <p class="error">{{ error.message }}</p>
+    }
 
     <section class="panel">
       <h2>Ajouter une dépense</h2>
