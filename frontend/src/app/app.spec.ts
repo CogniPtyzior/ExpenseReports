@@ -18,8 +18,8 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.brand-mark')?.textContent).toContain('Expense Management');
-    expect(compiled.textContent).toContain('Gestion des notes de frais');
+    expect(compiled.querySelector('.brand-mark')?.textContent).toContain('EM');
+    expect(compiled.textContent).toContain('Expense Management');
     expect(compiled.textContent).toContain('Notes de frais');
     expect(compiled.textContent).toContain('Utilisateurs');
     expect(compiled.textContent).not.toContain('Welcome to Expense Management');

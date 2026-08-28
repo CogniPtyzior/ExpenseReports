@@ -5,9 +5,9 @@ namespace WebApi.Domain.ExpenseEntries;
 
 /// <summary>
 /// Value object intentionally limited to EUR because the
-/// README only requires euro expenses. No complicated
-/// extraneous methods like conversions etc, as they are
-/// not in our project scope.
+/// current functional scope only requires euro expenses.
+/// Currency conversions can be added when multi-currency
+/// expense management becomes a supported use case.
 /// </summary>
 internal sealed class Currency
 {

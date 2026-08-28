@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace WebApi.Application.Core.Configuration;
 
 /// <summary>
-/// Options for simple expense rule thresholds that must stay aligned with README requirements.
+/// Options for simple expense rule thresholds that must stay aligned with functional requirements.
 /// </summary>
 internal sealed class ExpenseRulesOptions
 {

@@ -56,7 +56,7 @@ internal sealed class ExpenseReportCommandService(
         var report = await reports.FindByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException("expense_report.not_found", "Expense report was not found.");
 
-        // README ambiguity: deleting a report is implemented as physical removal of its attached entries.
+        // Product rule: deleting a report physically removes its attached entries.
         reports.Remove(report);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         logger.Information("Expense report {ExpenseReportId} was physically deleted with its entries.", report.Id);

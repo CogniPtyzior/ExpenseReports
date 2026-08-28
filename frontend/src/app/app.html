@@ -1,11 +1,11 @@
 <div class="app-shell">
   <header class="app-header">
-    <a class="brand" routerLink="/reports" aria-label="Expense Management accueil">
-      <span class="brand-mark">Expense Management</span>
-      <span class="brand-text">Gestion des notes de frais</span>
+    <a class="brand" routerLink="/reports" aria-label="Expense management home">
+      <span class="brand-mark">EM</span>
+      <span class="brand-text">Expense Management</span>
     </a>
 
-    <nav class="main-nav" aria-label="Navigation principale">
+    <nav class="main-nav" aria-label="Main navigation">
       @for (item of navigation; track item.path) {
         <a
           [routerLink]="item.path"
