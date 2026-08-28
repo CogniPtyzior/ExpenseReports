@@ -17,6 +17,7 @@ namespace WebApi.Tests.Application.ExpenseEntries;
 
 public sealed class ExpenseEntryServiceTests
 {
+    private static int CurrentYear => DateTime.UtcNow.Year;
     private static readonly DateTime Now = new(2025, 10, 15, 9, 0, 0, DateTimeKind.Utc);
 
     [Fact]
@@ -30,7 +31,7 @@ public sealed class ExpenseEntryServiceTests
 
         Assert.Single(fixture.EntryRepository.Entries);
         Assert.Equal(report.Id, result.ExpenseReportId);
-        Assert.Equal(new DateOnly(2025, 10, 15), result.ExpenseDate);
+        Assert.Equal(new DateOnly(CurrentYear, 10, 15), result.ExpenseDate);
         Assert.Equal("EUR", result.Currency);
         Assert.Equal(1, fixture.UnitOfWork.SaveCount);
         Assert.Equal(1, fixture.ReportRepository.LockCount);
@@ -58,7 +59,7 @@ public sealed class ExpenseEntryServiceTests
         var exception = await Assert.ThrowsAsync<DomainException>(() =>
             service.CreateAsync(CreateCommand(report.Id) with
             {
-                ExpenseDate = new DateOnly(2025, 11, 1)
+                ExpenseDate = new DateOnly(CurrentYear, 11, 1)
             }, CancellationToken.None));
 
         Assert.Equal("expense_entry.date_outside_report_month", exception.Code);
@@ -124,7 +125,7 @@ public sealed class ExpenseEntryServiceTests
         var exception = await Assert.ThrowsAsync<DomainException>(() =>
             service.UpdateAsync(UpdateCommand(entry.Id) with
             {
-                ExpenseDate = new DateOnly(2025, 9, 30)
+                ExpenseDate = new DateOnly(CurrentYear, 9, 30)
             }, CancellationToken.None));
 
         Assert.Equal("expense_entry.date_outside_report_month", exception.Code);
@@ -189,7 +190,7 @@ public sealed class ExpenseEntryServiceTests
     {
         return new CreateExpenseEntryCommand(
             reportId,
-            new DateOnly(2025, 10, 15),
+            new DateOnly(CurrentYear, 10, 15),
             "Restaurant",
             42.50m,
             "Cafe Central",
@@ -202,7 +203,7 @@ public sealed class ExpenseEntryServiceTests
     {
         return new UpdateExpenseEntryCommand(
             id,
-            new DateOnly(2025, 10, 16),
+            new DateOnly(CurrentYear, 10, 16),
             "Lunch with client",
             55.10m,
             "Cafe Central",
@@ -252,7 +253,7 @@ public sealed class ExpenseEntryServiceTests
                 Guid.NewGuid(),
                 user.Id,
                 user.Name.FullName,
-                CalendarMonth.Create(2025, 10),
+                CalendarMonth.Create(CurrentYear, 10),
                 Now);
             ReportRepository.Reports.Add(report);
             return report;
@@ -264,7 +265,7 @@ public sealed class ExpenseEntryServiceTests
                 Guid.NewGuid(),
                 report.Id,
                 report.Period,
-                new DateOnly(2025, 10, 15),
+                new DateOnly(CurrentYear, 10, 15),
                 ExpenseDescription.Create("Restaurant"),
                 Money.Create(42.50m, Currency.Eur),
                 BillingAddress.Create("Cafe Central", "1 Rue des Notes", "75001", "Paris"),

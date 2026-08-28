@@ -10,6 +10,7 @@ namespace WebApi.Tests.Infrastructure.Persistence;
 
 public sealed class DevelopmentDataSeederTests
 {
+    private static int CurrentYear => DateTime.UtcNow.Year;
     private static readonly Guid MarcAssinId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly Guid MarcNovemberReportId = Guid.Parse("77777777-7777-7777-7777-777777777777");
 
@@ -29,7 +30,7 @@ public sealed class DevelopmentDataSeederTests
 
         Assert.Equal(8, marc.MonthlyExpenseQuota.Value);
         Assert.Equal(MarcAssinId, report.UserId);
-        Assert.Equal(2025, report.Year);
+        Assert.Equal(CurrentYear, report.Year);
         Assert.Equal(11, report.Month);
         Assert.Equal(6, entries.Length);
         Assert.All(entries, entry => Assert.Equal(11, entry.ExpenseDate.Month));

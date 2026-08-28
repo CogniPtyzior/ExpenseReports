@@ -25,6 +25,8 @@ internal static class DevelopmentDataSeeder
     private static readonly Guid MarcNovemberParkingEntryId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
     private static readonly Guid MarcNovemberDinnerEntryId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
 
+    private static int CurrentYear => DateTime.UtcNow.Year;
+
     internal static async Task SeedAsync(DbContext context, CancellationToken cancellationToken)
     {
         var createdAtUtc = DateTime.UtcNow;
@@ -91,7 +93,7 @@ internal static class DevelopmentDataSeeder
                 OctoberReportId,
                 juste.Id,
                 juste.Name.FullName,
-                CalendarMonth.Create(2025, 10),
+                CalendarMonth.Create(CurrentYear, 10),
                 createdAtUtc));
         }
 
@@ -101,7 +103,7 @@ internal static class DevelopmentDataSeeder
                 MarcNovemberReportId,
                 marc.Id,
                 marc.Name.FullName,
-                CalendarMonth.Create(2025, 11),
+                CalendarMonth.Create(CurrentYear, 11),
                 createdAtUtc));
         }
     }
@@ -120,14 +122,14 @@ internal static class DevelopmentDataSeeder
         DateTime createdAtUtc,
         CancellationToken cancellationToken)
     {
-        var period = CalendarMonth.Create(2025, 10);
+        var period = CalendarMonth.Create(CurrentYear, 10);
         if (!await context.Set<ExpenseEntry>().AnyAsync(entry => entry.Id == OctoberLunchEntryId, cancellationToken))
         {
             context.Set<ExpenseEntry>().Add(CreateEntry(
                 OctoberLunchEntryId,
                 OctoberReportId,
                 period,
-                new DateOnly(2025, 10, 15),
+                new DateOnly(CurrentYear, 10, 15),
                 "Lunch",
                 25m,
                 "Cafe Paris",
@@ -143,7 +145,7 @@ internal static class DevelopmentDataSeeder
                 OctoberTaxiEntryId,
                 OctoberReportId,
                 period,
-                new DateOnly(2025, 10, 20),
+                new DateOnly(CurrentYear, 10, 20),
                 "Taxi",
                 42m,
                 "Taxi Parisien",
@@ -159,7 +161,7 @@ internal static class DevelopmentDataSeeder
                 OctoberDeletedEntryId,
                 OctoberReportId,
                 period,
-                new DateOnly(2025, 10, 25),
+                new DateOnly(CurrentYear, 10, 25),
                 "Cancelled meal",
                 18m,
                 "Cafe Paris",
@@ -177,15 +179,15 @@ internal static class DevelopmentDataSeeder
         DateTime createdAtUtc,
         CancellationToken cancellationToken)
     {
-        var period = CalendarMonth.Create(2025, 11);
+        var period = CalendarMonth.Create(CurrentYear, 11);
         var entries = new[]
         {
-            (MarcNovemberTrainEntryId, new DateOnly(2025, 11, 3), "Train", 86m, "SNCF Connect"),
-            (MarcNovemberHotelEntryId, new DateOnly(2025, 11, 4), "Hotel", 132m, "Hotel Lumiere"),
-            (MarcNovemberLunchEntryId, new DateOnly(2025, 11, 5), "Lunch", 28m, "Bistrot Central"),
-            (MarcNovemberTaxiEntryId, new DateOnly(2025, 11, 6), "Taxi", 34m, "Taxi Lyon"),
-            (MarcNovemberParkingEntryId, new DateOnly(2025, 11, 7), "Parking", 19m, "Parking Bellecour"),
-            (MarcNovemberDinnerEntryId, new DateOnly(2025, 11, 8), "Dinner", 48m, "Brasserie Nord")
+            (MarcNovemberTrainEntryId, new DateOnly(CurrentYear, 11, 3), "Train", 86m, "SNCF Connect"),
+            (MarcNovemberHotelEntryId, new DateOnly(CurrentYear, 11, 4), "Hotel", 132m, "Hotel Lumiere"),
+            (MarcNovemberLunchEntryId, new DateOnly(CurrentYear, 11, 5), "Lunch", 28m, "Bistrot Central"),
+            (MarcNovemberTaxiEntryId, new DateOnly(CurrentYear, 11, 6), "Taxi", 34m, "Taxi Lyon"),
+            (MarcNovemberParkingEntryId, new DateOnly(CurrentYear, 11, 7), "Parking", 19m, "Parking Bellecour"),
+            (MarcNovemberDinnerEntryId, new DateOnly(CurrentYear, 11, 8), "Dinner", 48m, "Brasserie Nord")
         };
 
         foreach (var (id, expenseDate, description, amount, merchantName) in entries)

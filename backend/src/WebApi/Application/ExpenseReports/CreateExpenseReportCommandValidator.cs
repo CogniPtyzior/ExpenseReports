@@ -11,7 +11,11 @@ internal sealed class CreateExpenseReportCommandValidator : AbstractValidator<Cr
     public CreateExpenseReportCommandValidator()
     {
         RuleFor(command => command.UserId).NotEmpty();
-        RuleFor(command => command.Year).GreaterThan(0);
+        RuleFor(command => command.Year).Must(year =>
+        {
+            var currentYear = DateTime.UtcNow.Year;
+            return year >= currentYear - 1 && year <= currentYear + 1;
+        });
         RuleFor(command => command.Month).InclusiveBetween(1, 12);
     }
 }

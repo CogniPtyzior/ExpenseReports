@@ -40,9 +40,10 @@ internal sealed class CalendarMonth
 
     public static CalendarMonth Create(int year, int month)
     {
-        if (year < 1)
+        var currentYear = DateTime.UtcNow.Year;
+        if (year != currentYear)
         {
-            throw new DomainException("expense_report.year_invalid", "Year must be positive.");
+            throw new DomainException("expense_report.year_invalid", "Year must be the current year.");
         }
 
         if (month is < 1 or > 12)

@@ -11,15 +11,16 @@ namespace WebApi.Tests.Infrastructure.Persistence;
 
 public sealed class ExpenseEntryRepositoryTests
 {
+    private static int CurrentYear => DateTime.UtcNow.Year;
     [Fact]
     public async Task List_active_by_report_excludes_soft_deleted_entries_and_other_reports()
     {
         using var db = CreateContext();
         var user = CreateUser();
         var report = CreateReport(user);
-        var otherReport = CreateReport(user, 2025, 11);
-        var activeEntry = CreateEntry(report, new DateOnly(2025, 10, 15), "Lunch");
-        var deletedEntry = CreateEntry(report, new DateOnly(2025, 10, 16), "Taxi");
+        var otherReport = CreateReport(user, CurrentYear, 11);
+        var activeEntry = CreateEntry(report, new DateOnly(CurrentYear, 10, 15), "Lunch");
+        var deletedEntry = CreateEntry(report, new DateOnly(CurrentYear, 10, 16), "Taxi");
         deletedEntry.SoftDelete(DateTime.UtcNow);
         db.AddRange(
             user,
@@ -27,7 +28,7 @@ public sealed class ExpenseEntryRepositoryTests
             otherReport,
             activeEntry,
             deletedEntry,
-            CreateEntry(otherReport, new DateOnly(2025, 11, 1), "Hotel"));
+            CreateEntry(otherReport, new DateOnly(CurrentYear, 11, 1), "Hotel"));
         await db.SaveChangesAsync();
         var repository = new ExpenseEntryRepository(db);
 
@@ -43,16 +44,16 @@ public sealed class ExpenseEntryRepositoryTests
         using var db = CreateContext();
         var user = CreateUser();
         var report = CreateReport(user);
-        var otherReport = CreateReport(user, 2025, 11);
-        var deletedEntry = CreateEntry(report, new DateOnly(2025, 10, 16), "Taxi");
+        var otherReport = CreateReport(user, CurrentYear, 11);
+        var deletedEntry = CreateEntry(report, new DateOnly(CurrentYear, 10, 16), "Taxi");
         deletedEntry.SoftDelete(DateTime.UtcNow);
         db.AddRange(
             user,
             report,
             otherReport,
-            CreateEntry(report, new DateOnly(2025, 10, 15), "Lunch"),
+            CreateEntry(report, new DateOnly(CurrentYear, 10, 15), "Lunch"),
             deletedEntry,
-            CreateEntry(otherReport, new DateOnly(2025, 11, 1), "Hotel"));
+            CreateEntry(otherReport, new DateOnly(CurrentYear, 11, 1), "Hotel"));
         await db.SaveChangesAsync();
         var repository = new ExpenseEntryRepository(db);
 
@@ -66,15 +67,15 @@ public sealed class ExpenseEntryRepositoryTests
         using var db = CreateContext();
         var user = CreateUser();
         var report = CreateReport(user);
-        var deletedEntry = CreateEntry(report, new DateOnly(2025, 10, 11), "Deleted");
+        var deletedEntry = CreateEntry(report, new DateOnly(CurrentYear, 10, 11), "Deleted");
         deletedEntry.SoftDelete(DateTime.UtcNow);
         db.AddRange(
             user,
             report,
-            CreateEntry(report, new DateOnly(2025, 10, 10), "A"),
+            CreateEntry(report, new DateOnly(CurrentYear, 10, 10), "A"),
             deletedEntry,
-            CreateEntry(report, new DateOnly(2025, 10, 12), "B"),
-            CreateEntry(report, new DateOnly(2025, 10, 13), "C"));
+            CreateEntry(report, new DateOnly(CurrentYear, 10, 12), "B"),
+            CreateEntry(report, new DateOnly(CurrentYear, 10, 13), "C"));
         await db.SaveChangesAsync();
         var repository = new ExpenseEntryRepository(db);
 
@@ -92,8 +93,8 @@ public sealed class ExpenseEntryRepositoryTests
         db.AddRange(
             user,
             report,
-            CreateEntry(report, new DateOnly(2025, 10, 20), "Taxi"),
-            CreateEntry(report, new DateOnly(2025, 10, 10), "Lunch"));
+            CreateEntry(report, new DateOnly(CurrentYear, 10, 20), "Taxi"),
+            CreateEntry(report, new DateOnly(CurrentYear, 10, 10), "Lunch"));
         await db.SaveChangesAsync();
         var repository = new ExpenseEntryRepository(db);
 
@@ -101,8 +102,8 @@ public sealed class ExpenseEntryRepositoryTests
 
         Assert.Collection(
             entries,
-            entry => Assert.Equal(new DateOnly(2025, 10, 10), entry.ExpenseDate),
-            entry => Assert.Equal(new DateOnly(2025, 10, 20), entry.ExpenseDate));
+            entry => Assert.Equal(new DateOnly(CurrentYear, 10, 10), entry.ExpenseDate),
+            entry => Assert.Equal(new DateOnly(CurrentYear, 10, 20), entry.ExpenseDate));
     }
 
     [Fact]
@@ -111,8 +112,8 @@ public sealed class ExpenseEntryRepositoryTests
         using var db = CreateContext();
         var user = CreateUser();
         var report = CreateReport(user);
-        var entry = CreateEntry(report, new DateOnly(2025, 10, 15), "Lunch");
-        var deletedEntry = CreateEntry(report, new DateOnly(2025, 10, 16), "Taxi");
+        var entry = CreateEntry(report, new DateOnly(CurrentYear, 10, 15), "Lunch");
+        var deletedEntry = CreateEntry(report, new DateOnly(CurrentYear, 10, 16), "Taxi");
         deletedEntry.SoftDelete(DateTime.UtcNow);
         db.AddRange(user, report, entry, deletedEntry);
         await db.SaveChangesAsync();
@@ -133,7 +134,7 @@ public sealed class ExpenseEntryRepositoryTests
         var report = CreateReport(user);
         db.AddRange(user, report);
         var repository = new ExpenseEntryRepository(db);
-        var entry = CreateEntry(report, new DateOnly(2025, 10, 15), "Lunch");
+        var entry = CreateEntry(report, new DateOnly(CurrentYear, 10, 15), "Lunch");
 
         await repository.AddAsync(entry, CancellationToken.None);
         await db.SaveChangesAsync();
@@ -205,9 +206,9 @@ public sealed class ExpenseEntryRepositoryTests
             DateTime.UtcNow);
     }
 
-    private static ExpenseReport CreateReport(User user, int year = 2025, int month = 10)
+    private static ExpenseReport CreateReport(User user, int? year = null, int month = 10)
     {
-        return ExpenseReport.Create(Guid.NewGuid(), user.Id, user.Name.FullName, CalendarMonth.Create(year, month), DateTime.UtcNow);
+        return ExpenseReport.Create(Guid.NewGuid(), user.Id, user.Name.FullName, CalendarMonth.Create(year ?? CurrentYear, month), DateTime.UtcNow);
     }
 
     private static ExpenseEntry CreateEntry(ExpenseReport report, DateOnly expenseDate, string description)

@@ -7,8 +7,9 @@ namespace WebApi.Tests.Domain.ExpenseEntries;
 
 public sealed class ExpenseEntryTests
 {
+    private static int CurrentYear => DateTime.UtcNow.Year;
     private static readonly Guid ReportId = Guid.Parse("33333333-3333-3333-3333-333333333333");
-    private static readonly CalendarMonth October2025 = CalendarMonth.Create(2025, 10);
+    private static readonly CalendarMonth October2025 = CalendarMonth.Create(CurrentYear, 10);
     private static readonly DateTime Now = new(2025, 10, 15, 8, 30, 0, DateTimeKind.Utc);
 
     [Fact]
@@ -60,9 +61,9 @@ public sealed class ExpenseEntryTests
         var entry = CreateEntry();
 
         Assert.Equal(ReportId, entry.ExpenseReportId);
-        Assert.Equal(2025, entry.ReportYear);
+        Assert.Equal(CurrentYear, entry.ReportYear);
         Assert.Equal(10, entry.ReportMonth);
-        Assert.Equal(new DateOnly(2025, 10, 15), entry.ExpenseDate);
+        Assert.Equal(new DateOnly(CurrentYear, 10, 15), entry.ExpenseDate);
         Assert.Equal("Lunch", entry.Description.Value);
         Assert.Equal(25m, entry.Amount.Amount);
         Assert.Equal(Now, entry.CreatedAtUtc);
@@ -76,7 +77,7 @@ public sealed class ExpenseEntryTests
             Guid.NewGuid(),
             Guid.Empty,
             October2025,
-            new DateOnly(2025, 10, 15),
+            new DateOnly(CurrentYear, 10, 15),
             ExpenseDescription.Create("Lunch"),
             Money.Create(25m, Currency.Eur),
             BillingAddress.Create("Cafe Paris", "1 Rue des Notes", "75001", "Paris"),
@@ -85,7 +86,7 @@ public sealed class ExpenseEntryTests
             Guid.NewGuid(),
             ReportId,
             October2025,
-            new DateOnly(2025, 11, 1),
+            new DateOnly(CurrentYear, 11, 1),
             ExpenseDescription.Create("Lunch"),
             Money.Create(25m, Currency.Eur),
             BillingAddress.Create("Cafe Paris", "1 Rue des Notes", "75001", "Paris"),
@@ -99,7 +100,7 @@ public sealed class ExpenseEntryTests
             Guid.NewGuid(),
             ReportId,
             null!,
-            new DateOnly(2025, 10, 15),
+            new DateOnly(CurrentYear, 10, 15),
             ExpenseDescription.Create("Lunch"),
             Money.Create(25m, Currency.Eur),
             BillingAddress.Create("Cafe Paris", "1 Rue des Notes", "75001", "Paris"),
@@ -108,7 +109,7 @@ public sealed class ExpenseEntryTests
             Guid.NewGuid(),
             ReportId,
             October2025,
-            new DateOnly(2025, 10, 15),
+            new DateOnly(CurrentYear, 10, 15),
             null!,
             Money.Create(25m, Currency.Eur),
             BillingAddress.Create("Cafe Paris", "1 Rue des Notes", "75001", "Paris"),
@@ -117,7 +118,7 @@ public sealed class ExpenseEntryTests
             Guid.NewGuid(),
             ReportId,
             October2025,
-            new DateOnly(2025, 10, 15),
+            new DateOnly(CurrentYear, 10, 15),
             ExpenseDescription.Create("Lunch"),
             null!,
             BillingAddress.Create("Cafe Paris", "1 Rue des Notes", "75001", "Paris"),
@@ -126,7 +127,7 @@ public sealed class ExpenseEntryTests
             Guid.NewGuid(),
             ReportId,
             October2025,
-            new DateOnly(2025, 10, 15),
+            new DateOnly(CurrentYear, 10, 15),
             ExpenseDescription.Create("Lunch"),
             Money.Create(25m, Currency.Eur),
             null!,
@@ -138,13 +139,13 @@ public sealed class ExpenseEntryTests
         var entry = CreateEntry();
 
         entry.Update(
-            new DateOnly(2025, 10, 20),
+            new DateOnly(CurrentYear, 10, 20),
             ExpenseDescription.Create("Taxi"),
             Money.Create(42m, Currency.Eur),
             BillingAddress.Create("Taxi Paris", "2 Rue des Frais", "75002", "Paris"),
             Now.AddHours(1));
 
-        Assert.Equal(new DateOnly(2025, 10, 20), entry.ExpenseDate);
+        Assert.Equal(new DateOnly(CurrentYear, 10, 20), entry.ExpenseDate);
         Assert.Equal("Taxi", entry.Description.Value);
         Assert.Equal(42m, entry.Amount.Amount);
         Assert.Equal("Taxi Paris", entry.BillingAddress.MerchantName);
@@ -157,19 +158,19 @@ public sealed class ExpenseEntryTests
         var entry = CreateEntry();
 
         Assert.Throws<DomainException>(() => entry.Update(
-            new DateOnly(2025, 10, 20),
+            new DateOnly(CurrentYear, 10, 20),
             null!,
             Money.Create(42m, Currency.Eur),
             BillingAddress.Create("Taxi Paris", "2 Rue des Frais", "75002", "Paris"),
             Now.AddHours(1)));
         Assert.Throws<DomainException>(() => entry.Update(
-            new DateOnly(2025, 10, 20),
+            new DateOnly(CurrentYear, 10, 20),
             ExpenseDescription.Create("Taxi"),
             null!,
             BillingAddress.Create("Taxi Paris", "2 Rue des Frais", "75002", "Paris"),
             Now.AddHours(1)));
         Assert.Throws<DomainException>(() => entry.Update(
-            new DateOnly(2025, 10, 20),
+            new DateOnly(CurrentYear, 10, 20),
             ExpenseDescription.Create("Taxi"),
             Money.Create(42m, Currency.Eur),
             null!,
@@ -181,12 +182,12 @@ public sealed class ExpenseEntryTests
         var entry = CreateEntry();
 
         Assert.Throws<DomainException>(() => entry.Update(
-            new DateOnly(2025, 9, 30),
+            new DateOnly(CurrentYear, 9, 30),
             ExpenseDescription.Create("Taxi"),
             Money.Create(42m, Currency.Eur),
             BillingAddress.Create("Taxi Paris", "2 Rue des Frais", "75002", "Paris"),
             Now.AddHours(1)));
-        Assert.Equal(new DateOnly(2025, 10, 15), entry.ExpenseDate);
+        Assert.Equal(new DateOnly(CurrentYear, 10, 15), entry.ExpenseDate);
         Assert.Null(entry.UpdatedAtUtc);
     }
 
@@ -208,7 +209,7 @@ public sealed class ExpenseEntryTests
             Guid.Parse("44444444-4444-4444-4444-444444444444"),
             ReportId,
             October2025,
-            new DateOnly(2025, 10, 15),
+            new DateOnly(CurrentYear, 10, 15),
             ExpenseDescription.Create("Lunch"),
             Money.Create(25m, Currency.Eur),
             BillingAddress.Create("Cafe Paris", "1 Rue des Notes", "75001", "Paris"),

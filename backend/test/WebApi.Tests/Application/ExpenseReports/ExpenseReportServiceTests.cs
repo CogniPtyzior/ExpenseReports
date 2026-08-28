@@ -13,6 +13,7 @@ namespace WebApi.Tests.Application.ExpenseReports;
 
 public sealed class ExpenseReportServiceTests
 {
+    private static int CurrentYear => DateTime.UtcNow.Year;
     private static readonly DateTime Now = new(2025, 10, 15, 9, 0, 0, DateTimeKind.Utc);
 
     [Fact]
@@ -22,10 +23,10 @@ public sealed class ExpenseReportServiceTests
         var user = fixture.AddUser();
         var service = fixture.CreateCommandService();
 
-        var result = await service.CreateAsync(new CreateExpenseReportCommand(user.Id, 2025, 10), CancellationToken.None);
+        var result = await service.CreateAsync(new CreateExpenseReportCommand(user.Id, CurrentYear, 10), CancellationToken.None);
 
         Assert.Single(fixture.ReportRepository.Reports);
-        Assert.Equal("Juste Leblanc - Octobre 2025", result.Title);
+        Assert.Equal($"Juste Leblanc - Octobre {CurrentYear}", result.Title);
         Assert.Equal(1, fixture.UnitOfWork.SaveCount);
     }
 
@@ -38,7 +39,7 @@ public sealed class ExpenseReportServiceTests
         var service = fixture.CreateCommandService();
 
         var exception = await Assert.ThrowsAsync<ConflictException>(() =>
-            service.CreateAsync(new CreateExpenseReportCommand(user.Id, 2025, 10), CancellationToken.None));
+            service.CreateAsync(new CreateExpenseReportCommand(user.Id, CurrentYear, 10), CancellationToken.None));
 
         Assert.Equal("expense_report.user_not_assignable", exception.Code);
     }
@@ -52,12 +53,12 @@ public sealed class ExpenseReportServiceTests
             Guid.NewGuid(),
             user.Id,
             user.Name.FullName,
-            CalendarMonth.Create(2025, 10),
+            CalendarMonth.Create(CurrentYear, 10),
             Now));
         var service = fixture.CreateCommandService();
 
         var exception = await Assert.ThrowsAsync<ConflictException>(() =>
-            service.CreateAsync(new CreateExpenseReportCommand(user.Id, 2025, 10), CancellationToken.None));
+            service.CreateAsync(new CreateExpenseReportCommand(user.Id, CurrentYear, 10), CancellationToken.None));
 
         Assert.Equal("expense_report.already_exists", exception.Code);
     }
@@ -67,7 +68,7 @@ public sealed class ExpenseReportServiceTests
     {
         var fixture = new Fixture();
         var user = fixture.AddUser();
-        var report = ExpenseReport.Create(Guid.NewGuid(), user.Id, user.Name.FullName, CalendarMonth.Create(2025, 10), Now);
+        var report = ExpenseReport.Create(Guid.NewGuid(), user.Id, user.Name.FullName, CalendarMonth.Create(CurrentYear, 10), Now);
         fixture.ReportRepository.Reports.Add(report);
         var service = fixture.CreateCommandService();
 

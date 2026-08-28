@@ -12,6 +12,7 @@ namespace WebApi.Tests.Application.ExpenseEntries;
 
 public sealed class ExpenseEntryQueryServiceTests
 {
+    private static int CurrentYear => DateTime.UtcNow.Year;
     private static readonly DateTime Now = new(2025, 10, 15, 9, 0, 0, DateTimeKind.Utc);
 
     [Fact]
@@ -19,10 +20,10 @@ public sealed class ExpenseEntryQueryServiceTests
     {
         var fixture = new Fixture(pageSize: 2);
         var report = fixture.AddReport();
-        fixture.AddEntry(report, new DateOnly(2025, 10, 10), "A");
-        fixture.AddEntry(report, new DateOnly(2025, 10, 11), "B");
-        fixture.AddEntry(report, new DateOnly(2025, 10, 12), "C");
-        var deleted = fixture.AddEntry(report, new DateOnly(2025, 10, 13), "Deleted");
+        fixture.AddEntry(report, new DateOnly(CurrentYear, 10, 10), "A");
+        fixture.AddEntry(report, new DateOnly(CurrentYear, 10, 11), "B");
+        fixture.AddEntry(report, new DateOnly(CurrentYear, 10, 12), "C");
+        var deleted = fixture.AddEntry(report, new DateOnly(CurrentYear, 10, 13), "Deleted");
         deleted.SoftDelete(Now);
         var service = fixture.CreateService();
 
@@ -77,7 +78,7 @@ public sealed class ExpenseEntryQueryServiceTests
                 Guid.NewGuid(),
                 Guid.NewGuid(),
                 "Juste Leblanc",
-                CalendarMonth.Create(2025, 10),
+                CalendarMonth.Create(CurrentYear, 10),
                 Now);
             reports.Reports.Add(report);
             return report;

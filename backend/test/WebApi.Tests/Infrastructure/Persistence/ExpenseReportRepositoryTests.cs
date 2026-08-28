@@ -9,18 +9,19 @@ namespace WebApi.Tests.Infrastructure.Persistence;
 
 public sealed class ExpenseReportRepositoryTests
 {
+    private static int CurrentYear => DateTime.UtcNow.Year;
     [Fact]
     public async Task Exists_for_user_and_month_detects_existing_report()
     {
         await using var db = CreateContext();
         var user = CreateUser();
-        var report = CreateReport(user, 2025, 10);
+        var report = CreateReport(user, CurrentYear, 10);
         db.Add(user);
         db.Add(report);
         await db.SaveChangesAsync();
         var repository = new ExpenseReportRepository(db);
 
-        var exists = await repository.ExistsForUserAndMonthAsync(user.Id, CalendarMonth.Create(2025, 10), CancellationToken.None);
+        var exists = await repository.ExistsForUserAndMonthAsync(user.Id, CalendarMonth.Create(CurrentYear, 10), CancellationToken.None);
 
         Assert.True(exists);
     }
@@ -31,8 +32,8 @@ public sealed class ExpenseReportRepositoryTests
         await using var db = CreateContext();
         var user = CreateUser();
         db.Add(user);
-        db.Add(CreateReport(user, 2025, 9));
-        db.Add(CreateReport(user, 2025, 10));
+        db.Add(CreateReport(user, CurrentYear, 9));
+        db.Add(CreateReport(user, CurrentYear, 10));
         await db.SaveChangesAsync();
         var repository = new ExpenseReportRepository(db);
 
@@ -49,7 +50,7 @@ public sealed class ExpenseReportRepositoryTests
     {
         await using var db = CreateContext();
         var user = CreateUser();
-        var report = CreateReport(user, 2025, 10);
+        var report = CreateReport(user, CurrentYear, 10);
         db.Add(user);
         db.Add(report);
         await db.SaveChangesAsync();
@@ -66,7 +67,7 @@ public sealed class ExpenseReportRepositoryTests
     {
         await using var db = CreateContext();
         var user = CreateUser();
-        var report = CreateReport(user, 2025, 10);
+        var report = CreateReport(user, CurrentYear, 10);
         db.AddRange(user, report, CreateEntry(report));
         await db.SaveChangesAsync();
         var repository = new ExpenseReportRepository(db);
